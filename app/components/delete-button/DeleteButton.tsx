@@ -21,8 +21,13 @@ export default function DeleteButton({
     e.preventDefault()
     if (confirm(confirmMessage)) {
       startTransition(async () => {
-        await action()
-        router.refresh()
+        try {
+          await action()
+          router.refresh()
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Error al eliminar'
+          alert(`Error: ${errorMessage}`)
+        }
       })
     }
   }

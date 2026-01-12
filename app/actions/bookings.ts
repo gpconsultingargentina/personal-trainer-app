@@ -109,45 +109,38 @@ export async function cancelBooking(bookingId: string) {
 export async function deleteBooking(bookingId: string) {
   const supabase = await createClient()
 
-  // Obtener la reserva para saber qué clase actualizar
-  const { data: booking } = await supabase
+  // Obtener la reserva para saber qué clase eliminar
+  const { data: booking, error: bookingError } = await supabase
     .from('bookings')
     .select('class_id, status')
     .eq('id', bookingId)
     .single()
 
-  if (!booking) {
-    throw new Error('Reserva no encontrada')
+  if (bookingError || !booking) {
+    throw new Error(bookingError?.message || 'Reserva no encontrada')
   }
 
-  // Eliminar la reserva
-  const { error } = await supabase
-    .from('bookings')
+  if (!booking.class_id) {
+    throw new Error('No se pudo obtener el ID de la clase')
+  }
+
+  const classId = booking.class_id
+
+  // Eliminar la clase completa directamente (las reservas se eliminarán automáticamente por CASCADE)
+  const { error: deleteError } = await supabase
+    .from('classes')
     .delete()
-    .eq('id', bookingId)
+    .eq('id', classId)
 
-  if (error) {
-    throw new Error(error.message)
+  if (deleteError) {
+    throw new Error(`Error al eliminar la clase: ${deleteError.message}`)
   }
 
-  // Decrementar contador si estaba confirmada
-  if (booking.status === 'confirmed') {
-    const { data: classData } = await supabase
-      .from('classes')
-      .select('current_bookings')
-      .eq('id', booking.class_id)
-      .single()
-
-    if (classData && classData.current_bookings > 0) {
-      await supabase
-        .from('classes')
-        .update({ current_bookings: classData.current_bookings - 1 })
-        .eq('id', booking.class_id)
-    }
-  }
-
+  // Revalidar todas las rutas relacionadas
   revalidatePath('/dashboard/students')
+  revalidatePath('/dashboard/classes')
   revalidatePath('/public/book')
+  
   return { success: true }
 }
 
@@ -158,48 +151,59 @@ export async function deleteMultipleBookings(bookingIds: string[]) {
     throw new Error('No se seleccionaron reservas para eliminar')
   }
 
-  // Obtener todas las reservas para saber qué clases actualizar
-  const { data: bookings } = await supabase
+  // Obtener todas las reservas para saber qué clases eliminar
+  const { data: bookings, error: bookingsError } = await supabase
     .from('bookings')
     .select('id, class_id, status')
     .in('id', bookingIds)
+
+  if (bookingsError) {
+    throw new Error(`Error al obtener las reservas: ${bookingsError.message}`)
+  }
 
   if (!bookings || bookings.length === 0) {
     throw new Error('No se encontraron las reservas')
   }
 
-  // Eliminar las reservas
-  const { error } = await supabase
-    .from('bookings')
-    .delete()
-    .in('id', bookingIds)
+  // Obtener los IDs únicos de las clases a eliminar
+  const classIdsToDelete = [...new Set(bookings.map(b => b.class_id).filter(Boolean))]
 
-  if (error) {
-    throw new Error(error.message)
+  if (classIdsToDelete.length === 0) {
+    throw new Error('No se pudieron obtener los IDs de las clases')
   }
 
-  // Decrementar contadores de las clases que tenían reservas confirmadas
-  const confirmedBookings = bookings.filter(b => b.status === 'confirmed')
-  const classIdsToUpdate = [...new Set(confirmedBookings.map(b => b.class_id))]
+  // Verificar que las clases existen antes de eliminarlas
+  const { data: classesExist } = await supabase
+    .from('classes')
+    .select('id')
+    .in('id', classIdsToDelete)
 
-  for (const classId of classIdsToUpdate) {
-    const { data: classData } = await supabase
-      .from('classes')
-      .select('current_bookings')
-      .eq('id', classId)
-      .single()
+  if (!classesExist || classesExist.length === 0) {
+    throw new Error('No se encontraron las clases a eliminar')
+  }
 
-    if (classData && classData.current_bookings > 0) {
-      const countToDecrement = confirmedBookings.filter(b => b.class_id === classId).length
-      const newCount = Math.max(0, classData.current_bookings - countToDecrement)
-      await supabase
-        .from('classes')
-        .update({ current_bookings: newCount })
-        .eq('id', classId)
-    }
+  // Eliminar las clases completas (las reservas se eliminarán automáticamente por CASCADE)
+  const { error: deleteError } = await supabase
+    .from('classes')
+    .delete()
+    .in('id', classIdsToDelete)
+
+  if (deleteError) {
+    throw new Error(`Error al eliminar las clases: ${deleteError.message}`)
+  }
+
+  // Verificar que las clases fueron eliminadas
+  const { data: classesStillExist } = await supabase
+    .from('classes')
+    .select('id')
+    .in('id', classIdsToDelete)
+
+  if (classesStillExist && classesStillExist.length > 0) {
+    throw new Error('Algunas clases no se eliminaron correctamente')
   }
 
   revalidatePath('/dashboard/students')
+  revalidatePath('/dashboard/classes')
   revalidatePath('/public/book')
   return { success: true, deletedCount: bookings.length }
 }

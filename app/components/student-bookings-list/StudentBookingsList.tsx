@@ -137,8 +137,10 @@ export default function StudentBookingsList({ bookings }: StudentBookingsListPro
                   {isConfirmed && (
                     <div className="ml-4">
                       <DeleteButton
-                        action={deleteBooking.bind(null, booking.id)}
-                        confirmMessage="¿Estás seguro de que quieres eliminar esta clase del alumno?"
+                        action={async () => {
+                          await deleteBooking(booking.id)
+                        }}
+                        confirmMessage="¿Estás seguro de que quieres eliminar esta clase? Esto eliminará la clase completa y todas las reservas asociadas."
                         label="Eliminar"
                       />
                     </div>
