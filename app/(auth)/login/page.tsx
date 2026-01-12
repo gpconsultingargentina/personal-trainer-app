@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/app/lib/supabase/client'
 
@@ -10,10 +10,28 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
-  const supabase = createClient()
+  
+  // Crear cliente de Supabase de forma segura
+  const { supabase, configError } = useMemo(() => {
+    try {
+      const client = createClient()
+      return { supabase: client, configError: null }
+    } catch (err) {
+      return {
+        supabase: null,
+        configError: err instanceof Error ? err.message : 'Error desconocido de configuración',
+      }
+    }
+  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!supabase) {
+      setError('Error de configuración: No se pudo inicializar el cliente de Supabase')
+      return
+    }
+    
     setLoading(true)
     setError(null)
 
@@ -34,6 +52,25 @@ export default function LoginPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Si hay error de configuración, mostrar mensaje
+  if (configError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-red-600 mb-4">
+              Error de Configuración
+            </h2>
+            <p className="text-gray-700 mb-4">{configError}</p>
+            <p className="text-sm text-gray-600">
+              Por favor, verifica que el archivo <code className="bg-gray-100 px-2 py-1 rounded">.env.local</code> existe y contiene las variables de entorno necesarias.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

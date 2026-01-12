@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClass, updateClass, type Class } from '@/app/actions/classes'
+import TimeInput from '@/app/components/time-input/TimeInput'
 
 interface ClassFormProps {
   classData?: Class | null
@@ -12,6 +13,23 @@ export default function ClassForm({ classData }: ClassFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [date, setDate] = useState('')
+  const [time, setTime] = useState('00:00')
+
+  // Inicializar fecha y hora desde classData
+  useEffect(() => {
+    if (classData) {
+      const dateObj = new Date(classData.scheduled_at)
+      const year = dateObj.getFullYear()
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0')
+      const day = String(dateObj.getDate()).padStart(2, '0')
+      setDate(`${year}-${month}-${day}`)
+      
+      const hours = String(dateObj.getHours()).padStart(2, '0')
+      const minutes = String(dateObj.getMinutes()).padStart(2, '0')
+      setTime(`${hours}:${minutes}`)
+    }
+  }, [classData])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -20,6 +38,10 @@ export default function ClassForm({ classData }: ClassFormProps) {
 
     try {
       const formData = new FormData(e.currentTarget)
+      
+      // Combinar fecha y hora en formato datetime-local
+      const scheduledAt = `${date}T${time}`
+      formData.set('scheduled_at', scheduledAt)
 
       if (classData) {
         await updateClass(classData.id, formData)
@@ -32,10 +54,6 @@ export default function ClassForm({ classData }: ClassFormProps) {
     }
   }
 
-  const defaultDateTime = classData
-    ? new Date(classData.scheduled_at).toISOString().slice(0, 16)
-    : ''
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
@@ -44,22 +62,42 @@ export default function ClassForm({ classData }: ClassFormProps) {
         </div>
       )}
 
-      <div>
-        <label
-          htmlFor="scheduled_at"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Fecha y Hora *
-        </label>
-        <input
-          type="datetime-local"
-          id="scheduled_at"
-          name="scheduled_at"
-          required
-          defaultValue={defaultDateTime}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-        />
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label
+            htmlFor="date"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Fecha *
+          </label>
+          <input
+            type="date"
+            id="date"
+            required
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="time"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Hora (24h) *
+          </label>
+          <div className="mt-1">
+            <TimeInput
+              value={time}
+              onChange={setTime}
+              required
+              className="w-full"
+            />
+          </div>
+        </div>
       </div>
+      {/* Input oculto para el formulario */}
+      <input type="hidden" name="scheduled_at" value={date && time ? `${date}T${time}` : ''} />
 
       <div className="grid grid-cols-2 gap-4">
         <div>
