@@ -20,6 +20,8 @@ const DAYS_OF_WEEK = [
 ]
 
 const DURATION_OPTIONS = [
+  { value: 1, label: '1 semana' },
+  { value: 2, label: '2 semanas' },
   { value: 4, label: '4 semanas' },
   { value: 8, label: '8 semanas' },
   { value: 12, label: '12 semanas' },
