@@ -1,6 +1,8 @@
 'use server'
 
 import { createClient } from '@/app/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 
 export type Student = {
   id: string
@@ -80,5 +82,26 @@ export async function getStudent(id: string): Promise<Student | null> {
   }
 
   return data
+}
+
+export async function createStudent(formData: FormData) {
+  const supabase = await createClient()
+
+  const name = formData.get('name') as string
+  const email = formData.get('email') as string
+  const phone = formData.get('phone') as string
+
+  const { error } = await supabase.from('students').insert({
+    name,
+    email,
+    phone: phone || null,
+  })
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  revalidatePath('/dashboard/students')
+  redirect('/dashboard/students')
 }
 
