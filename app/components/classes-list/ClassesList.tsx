@@ -139,6 +139,11 @@ export default function ClassesList({ classes }: ClassesListProps) {
                     Duración: {classItem.duration_minutes} min | Capacidad:{' '}
                     {classItem.current_bookings}/{classItem.max_capacity}
                   </p>
+                  {classItem.students && classItem.students.length > 0 && (
+                    <p className="mt-1 text-sm text-gray-700 font-medium">
+                      {classItem.students.map((student: { id: string; name: string }) => student.name).join(', ')}
+                    </p>
+                  )}
                   {classItem.description && (
                     <p className="mt-1 text-sm text-gray-600">
                       {classItem.description}

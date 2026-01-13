@@ -14,6 +14,10 @@ export type Class = {
   description: string | null
   created_at: string
   updated_at: string
+  students?: Array<{
+    id: string
+    name: string
+  }>
 }
 
 export async function createClass(formData: FormData) {
@@ -108,14 +112,41 @@ export async function getClasses(): Promise<Class[]> {
 
   const { data, error } = await supabase
     .from('classes')
-    .select('*')
+    .select(`
+      *,
+      bookings(
+        status,
+        student:students(
+          id,
+          name
+        )
+      )
+    `)
     .order('scheduled_at', { ascending: true })
 
   if (error) {
     throw new Error(error.message)
   }
 
-  return data || []
+  // Transformar los datos para incluir los estudiantes en un formato más simple
+  return (data || []).map((classItem: any) => {
+    // Filtrar solo las reservas confirmadas y obtener los estudiantes
+    const confirmedBookings = classItem.bookings?.filter((booking: any) => 
+      booking && booking.status === 'confirmed' && booking.student !== null
+    ) || []
+    
+    const students = confirmedBookings.map((booking: any) => ({
+      id: booking.student.id,
+      name: booking.student.name
+    }))
+    
+    // Eliminar bookings del objeto y agregar students
+    const { bookings, ...classData } = classItem
+    return {
+      ...classData,
+      students
+    }
+  })
 }
 
 export async function getClass(id: string): Promise<Class | null> {
