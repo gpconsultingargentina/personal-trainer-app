@@ -69,7 +69,29 @@ export async function updateClass(id: string, formData: FormData) {
     throw new Error(error.message)
   }
 
+  // Actualizar el estado de las reservas asociadas según el estado de la clase
+  let bookingStatus: 'confirmed' | 'completed' | 'cancelled' = 'confirmed'
+  if (status === 'completed') {
+    bookingStatus = 'completed'
+  } else if (status === 'cancelled') {
+    bookingStatus = 'cancelled'
+  } else if (status === 'scheduled') {
+    bookingStatus = 'confirmed'
+  }
+
+  // Actualizar todas las reservas de esta clase
+  const { error: bookingError } = await supabase
+    .from('bookings')
+    .update({ status: bookingStatus })
+    .eq('class_id', id)
+
+  if (bookingError) {
+    // No lanzamos error aquí para no interrumpir la actualización de la clase
+    console.error('Error al actualizar el estado de las reservas:', bookingError)
+  }
+
   revalidatePath('/dashboard/classes')
+  revalidatePath('/dashboard/students')
   redirect('/dashboard/classes')
 }
 

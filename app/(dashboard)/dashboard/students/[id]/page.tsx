@@ -39,6 +39,33 @@ export default async function StudentHistoryPage({
     .eq('student_id', params.id)
     .order('submitted_at', { ascending: false })
 
+  // Calcular saldo de clases
+  let saldoClases = 0
+  if (bookings && bookings.length > 0) {
+    // Clases programadas: booking.status = 'confirmed' AND class.status = 'scheduled'
+    const clasesProgramadas = bookings.filter(
+      (booking: any) =>
+        booking.status === 'confirmed' &&
+        booking.classes?.status === 'scheduled'
+    ).length
+
+    // Clases completadas: booking.status = 'completed' OR class.status = 'completed'
+    const clasesCompletadas = bookings.filter(
+      (booking: any) =>
+        booking.status === 'completed' ||
+        booking.classes?.status === 'completed'
+    ).length
+
+    // Clases canceladas: booking.status = 'cancelled' OR class.status = 'cancelled'
+    const clasesCanceladas = bookings.filter(
+      (booking: any) =>
+        booking.status === 'cancelled' ||
+        booking.classes?.status === 'cancelled'
+    ).length
+
+    saldoClases = clasesProgramadas - (clasesCompletadas + clasesCanceladas)
+  }
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -76,6 +103,12 @@ export default async function StudentHistoryPage({
         <div className="bg-white shadow rounded-lg p-6">
           <h2 className="text-xl font-semibold mb-4">Clases Reservadas</h2>
           <StudentBookingsList bookings={bookings || []} />
+        </div>
+
+        <div className="bg-white shadow rounded-lg p-6">
+          <p className="text-lg font-semibold text-gray-900">
+            Saldo Clases: <span className={saldoClases < 0 ? 'text-red-600' : 'text-gray-900'}>{saldoClases}</span>
+          </p>
         </div>
 
         <div className="bg-white shadow rounded-lg p-6">
