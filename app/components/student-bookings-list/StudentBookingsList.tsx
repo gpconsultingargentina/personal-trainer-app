@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { deleteMultipleBookings } from '@/app/actions/bookings'
 import { formatDateTime24h } from '@/app/lib/utils'
 import DeleteButton from '@/app/components/delete-button/DeleteButton'
@@ -11,6 +12,7 @@ interface Booking {
   id: string
   status: 'confirmed' | 'cancelled' | 'completed'
   classes: {
+    id: string
     scheduled_at: string
   }
 }
@@ -135,7 +137,13 @@ export default function StudentBookingsList({ bookings }: StudentBookingsListPro
                     </p>
                   </div>
                   {isConfirmed && (
-                    <div className="ml-4">
+                    <div className="ml-4 flex space-x-2">
+                      <Link
+                        href={`/dashboard/classes/${booking.classes.id}`}
+                        className="text-indigo-600 hover:text-indigo-900"
+                      >
+                        Editar
+                      </Link>
                       <DeleteButton
                         action={async () => {
                           await deleteBooking(booking.id)
