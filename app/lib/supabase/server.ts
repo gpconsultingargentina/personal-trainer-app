@@ -41,22 +41,27 @@ export async function createClient() {
 }
 
 export async function createServiceClient() {
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      cookies: {
-        get() {
-          return undefined
-        },
-        set() {
-          // Service role client doesn't need cookies
-        },
-        remove() {
-          // Service role client doesn't need cookies
-        },
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new Error(
+      'Las variables de entorno de Supabase no están configuradas. Por favor, configura NEXT_PUBLIC_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY en tu archivo .env.local'
+    )
+  }
+
+  return createServerClient(supabaseUrl, serviceRoleKey, {
+    cookies: {
+      get() {
+        return undefined
       },
-    }
-  )
+      set() {
+        // Service role client doesn't need cookies
+      },
+      remove() {
+        // Service role client doesn't need cookies
+      },
+    },
+  })
 }
 

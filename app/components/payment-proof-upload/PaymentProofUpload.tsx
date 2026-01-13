@@ -2,7 +2,6 @@
 
 import { useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { createClient } from '@/app/lib/supabase/client'
 import CouponInput from '@/app/components/coupon-input/CouponInput'
 import PriceDisplay from '@/app/components/price-display/PriceDisplay'
 
@@ -72,26 +71,23 @@ export default function PaymentProofUpload({
     setError(null)
 
     try {
-      const supabase = createClient()
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
-      const filePath = `payment-proofs/${fileName}`
+      // Subir archivo usando API route
+      const formData = new FormData()
+      formData.append('file', file)
 
-      // Subir archivo
-      const { error: uploadError } = await supabase.storage
-        .from('payment-proofs')
-        .upload(filePath, file)
+      const response = await fetch('/api/payment-proof/upload', {
+        method: 'POST',
+        body: formData,
+      })
 
-      if (uploadError) {
-        throw new Error(uploadError.message)
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Error al subir el archivo')
       }
 
-      // Obtener URL pública
-      const { data: { publicUrl } } = supabase.storage
-        .from('payment-proofs')
-        .getPublicUrl(filePath)
-
-      await onSubmit(publicUrl, finalPrice, couponCode)
+      const { url } = await response.json()
+      
+      await onSubmit(url, finalPrice, couponCode)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al subir el archivo')
       setUploading(false)

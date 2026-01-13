@@ -72,14 +72,23 @@ export default async function PaymentsPage() {
                           )}
                         </div>
                         <div className="mt-4">
-                          <a
-                            href={payment.file_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-indigo-600 hover:text-indigo-900 text-sm"
-                          >
-                            Ver comprobante →
-                          </a>
+                          {(() => {
+                            // Extraer el path del archivo de la URL completa
+                            // La URL puede ser: https://xxx.supabase.co/storage/v1/object/public/payment-proofs/filename.pdf
+                            // Necesitamos solo: filename.pdf
+                            const urlParts = payment.file_url.split('/')
+                            const fileName = urlParts[urlParts.length - 1]
+                            return (
+                              <a
+                                href={`/api/payment-proof/view?path=${encodeURIComponent(fileName)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-indigo-600 hover:text-indigo-900 text-sm"
+                              >
+                                Ver comprobante →
+                              </a>
+                            )
+                          })()}
                         </div>
                       </div>
                       <div className="flex space-x-2">

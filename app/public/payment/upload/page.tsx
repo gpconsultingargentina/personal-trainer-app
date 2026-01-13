@@ -8,6 +8,7 @@ import { createClient } from '@/app/lib/supabase/client'
 import PaymentProofUpload from '@/app/components/payment-proof-upload/PaymentProofUpload'
 import { validateCoupon } from '@/app/actions/coupons'
 import { calculateDiscount } from '@/app/lib/utils/discount'
+import { createPaymentProof } from '@/app/actions/payments'
 
 export default function PaymentUploadPage() {
   const searchParams = useSearchParams()
@@ -89,9 +90,8 @@ export default function PaymentUploadPage() {
         }
       }
 
-      // Crear registro de comprobante
-      const supabase = createClient()
-      const { error } = await supabase.from('payment_proofs').insert({
+      // Crear registro de comprobante usando acción del servidor
+      await createPaymentProof({
         student_id: student.id,
         plan_id: selectedPlan.id,
         coupon_id: couponId || null,
@@ -99,12 +99,7 @@ export default function PaymentUploadPage() {
         final_price: finalPrice,
         discount_applied: discountApplied,
         file_url: fileUrl,
-        status: 'pending',
       })
-
-      if (error) {
-        throw new Error(error.message)
-      }
 
       // Registrar uso de cupón si aplica
       if (couponId) {
