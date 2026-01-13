@@ -40,30 +40,18 @@ export default async function StudentHistoryPage({
     .order('submitted_at', { ascending: false })
 
   // Calcular saldo de clases
+  // El saldo es simplemente el número de clases programadas que quedan
   let saldoClases = 0
   if (bookings && bookings.length > 0) {
-    // Clases programadas: booking.status = 'confirmed' AND class.status = 'scheduled'
-    const clasesProgramadas = bookings.filter(
-      (booking: any) =>
-        booking.status === 'confirmed' &&
-        booking.classes?.status === 'scheduled'
-    ).length
-
-    // Clases completadas: booking.status = 'completed' OR class.status = 'completed'
-    const clasesCompletadas = bookings.filter(
-      (booking: any) =>
-        booking.status === 'completed' ||
-        booking.classes?.status === 'completed'
-    ).length
-
-    // Clases canceladas: booking.status = 'cancelled' OR class.status = 'cancelled'
-    const clasesCanceladas = bookings.filter(
-      (booking: any) =>
-        booking.status === 'cancelled' ||
-        booking.classes?.status === 'cancelled'
-    ).length
-
-    saldoClases = clasesProgramadas - (clasesCompletadas + clasesCanceladas)
+    // Clases programadas: priorizar class.status sobre booking.status
+    saldoClases = bookings.filter((booking: any) => {
+      const classStatus = booking.classes?.status
+      // Si la clase tiene status, usar ese; si no, usar el booking.status como respaldo
+      if (classStatus === 'scheduled') return true
+      if (classStatus === 'completed' || classStatus === 'cancelled') return false
+      // Si no hay status de clase, usar booking.status como respaldo
+      return booking.status === 'confirmed'
+    }).length
   }
 
   return (
