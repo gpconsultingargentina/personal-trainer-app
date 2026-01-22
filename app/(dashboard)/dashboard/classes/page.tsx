@@ -17,11 +17,7 @@ export default async function ClassesPage() {
         </Link>
       </div>
 
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        <ul className="divide-y divide-gray-200">
-          <ClassesList classes={classes} />
-        </ul>
-      </div>
+      <ClassesList classes={classes} />
     </div>
   )
 }

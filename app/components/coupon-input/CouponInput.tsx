@@ -6,7 +6,7 @@ import { calculateDiscount } from '@/app/lib/utils/discount'
 interface CouponInputProps {
   planPrice: number
   planId?: string
-  onCouponValidated?: (valid: boolean, finalPrice?: number, discountAmount?: number) => void
+  onCouponValidated?: (valid: boolean, finalPrice?: number, discountAmount?: number, code?: string, coupon?: any) => void
 }
 
 export default function CouponInput({
@@ -55,7 +55,7 @@ export default function CouponInput({
             result.coupon.discount_value
           )
 
-          onCouponValidated?.(true, finalPrice, discountAmount)
+          onCouponValidated?.(true, finalPrice, discountAmount, code.toUpperCase(), result.coupon)
         } else {
           setCoupon(null)
           setError(result.error || 'Cupón inválido')
