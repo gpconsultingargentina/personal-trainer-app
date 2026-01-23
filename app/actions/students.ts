@@ -3,6 +3,7 @@
 import { createClient } from '@/app/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { sendWelcomeEmail } from '@/app/lib/email'
 
 export type Student = {
   id: string
@@ -50,6 +51,16 @@ export async function createOrGetStudent(
     throw new Error(error.message)
   }
 
+  // Enviar email de bienvenida si es un estudiante nuevo
+  if (newStudent && newStudent.email) {
+    try {
+      await sendWelcomeEmail(newStudent.email, newStudent.name)
+    } catch (emailError) {
+      // No fallar la creación del estudiante si el email falla
+      console.error('Error enviando email de bienvenida:', emailError)
+    }
+  }
+
   return newStudent
 }
 
@@ -91,14 +102,58 @@ export async function createStudent(formData: FormData) {
   const email = formData.get('email') as string
   const phone = formData.get('phone') as string
 
-  const { error } = await supabase.from('students').insert({
-    name,
-    email,
-    phone: phone || null,
-  })
+  // Verificar si el estudiante ya existe
+  const { data: existing } = await supabase
+    .from('students')
+    .select('*')
+    .eq('email', email)
+    .single()
 
-  if (error) {
-    throw new Error(error.message)
+  let student
+  let isNewStudent = false
+
+  if (existing) {
+    // Actualizar estudiante existente
+    const { data: updated, error: updateError } = await supabase
+      .from('students')
+      .update({ name, phone: phone || null })
+      .eq('id', existing.id)
+      .select()
+      .single()
+
+    if (updateError) {
+      throw new Error(updateError.message)
+    }
+
+    student = updated || existing
+  } else {
+    // Crear nuevo estudiante
+    const { data: newStudent, error: insertError } = await supabase
+      .from('students')
+      .insert({
+        name,
+        email,
+        phone: phone || null,
+      })
+      .select()
+      .single()
+
+    if (insertError) {
+      throw new Error(insertError.message)
+    }
+
+    student = newStudent
+    isNewStudent = true
+  }
+
+  // Enviar email de bienvenida solo si es un estudiante nuevo
+  if (isNewStudent && student && student.email) {
+    try {
+      await sendWelcomeEmail(student.email, student.name)
+    } catch (emailError) {
+      // No fallar la creación del estudiante si el email falla
+      console.error('Error enviando email de bienvenida:', emailError)
+    }
   }
 
   revalidatePath('/dashboard/students')
