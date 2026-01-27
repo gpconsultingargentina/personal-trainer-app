@@ -5,9 +5,10 @@ import StudentClassForm from '@/app/components/student-class-form/StudentClassFo
 export default async function NewStudentClassPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
-  const student = await getStudent(params.id)
+  const { id } = await params
+  const student = await getStudent(id)
 
   if (!student) {
     notFound()

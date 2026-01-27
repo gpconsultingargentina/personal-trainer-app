@@ -5,9 +5,10 @@ import { notFound } from 'next/navigation'
 export default async function EditClassPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
-  const classData = await getClass(params.id)
+  const { id } = await params
+  const classData = await getClass(id)
 
   if (!classData) {
     notFound()

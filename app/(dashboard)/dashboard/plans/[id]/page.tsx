@@ -5,9 +5,10 @@ import { notFound } from 'next/navigation'
 export default async function EditPlanPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
-  const plan = await getPlan(params.id)
+  const { id } = await params
+  const plan = await getPlan(id)
 
   if (!plan) {
     notFound()

@@ -8,9 +8,10 @@ import StudentBookingsList from '@/app/components/student-bookings-list/StudentB
 export default async function StudentHistoryPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
-  const student = await getStudent(params.id)
+  const { id } = await params
+  const student = await getStudent(id)
 
   if (!student) {
     notFound()
@@ -25,7 +26,7 @@ export default async function StudentHistoryPage({
       *,
       classes (*)
     `)
-    .eq('student_id', params.id)
+    .eq('student_id', id)
     .order('created_at', { ascending: false })
 
   // Obtener comprobantes del estudiante
@@ -36,7 +37,7 @@ export default async function StudentHistoryPage({
       coupons (code, discount_type, discount_value),
       class_plans (name)
     `)
-    .eq('student_id', params.id)
+    .eq('student_id', id)
     .order('submitted_at', { ascending: false })
 
   // Calcular saldo de clases

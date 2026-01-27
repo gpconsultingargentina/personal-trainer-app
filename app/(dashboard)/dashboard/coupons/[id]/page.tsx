@@ -5,9 +5,10 @@ import { notFound } from 'next/navigation'
 export default async function EditCouponPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
-  const coupon = await getCoupon(params.id)
+  const { id } = await params
+  const coupon = await getCoupon(id)
 
   if (!coupon) {
     notFound()

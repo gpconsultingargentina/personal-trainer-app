@@ -6,9 +6,10 @@ import StudentPaymentProofForm from '@/app/components/student-payment-proof-form
 export default async function NewStudentPaymentProofPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
-  const student = await getStudent(params.id)
+  const { id } = await params
+  const student = await getStudent(id)
   const plans = await getPlans()
 
   if (!student) {
