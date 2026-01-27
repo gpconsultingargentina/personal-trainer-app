@@ -40,7 +40,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       .eq('student_id', student.id)
       .eq('status', 'confirmed')
       .gte('classes.scheduled_at', new Date().toISOString())
-      .order('classes.scheduled_at', { ascending: true })
+      .order('scheduled_at', { referencedTable: 'classes', ascending: true })
       .limit(100)
 
     if (bookingsError) {

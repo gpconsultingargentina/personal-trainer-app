@@ -415,7 +415,7 @@ export async function getStudentForPortal(
     .eq('student_id', student.id)
     .eq('status', 'confirmed')
     .gte('classes.scheduled_at', new Date().toISOString())
-    .order('classes.scheduled_at', { ascending: true })
+    .order('scheduled_at', { referencedTable: 'classes', ascending: true })
     .limit(5)
 
   const upcomingClasses = (bookings || [])

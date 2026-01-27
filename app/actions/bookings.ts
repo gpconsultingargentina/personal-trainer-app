@@ -558,7 +558,7 @@ export async function getStudentBookings(
     query = query.gte('classes.scheduled_at', new Date().toISOString())
   }
 
-  query = query.order('classes.scheduled_at', { ascending: options?.upcoming ? true : false })
+  query = query.order('scheduled_at', { referencedTable: 'classes', ascending: options?.upcoming ? true : false })
 
   if (options?.limit) {
     query = query.limit(options.limit)
