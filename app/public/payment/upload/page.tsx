@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { getActivePlans, type Plan } from '@/app/actions/plans'
 import { createOrGetStudent, getStudent } from '@/app/actions/students'
@@ -10,7 +10,7 @@ import { validateCoupon } from '@/app/actions/coupons'
 import { calculateDiscount } from '@/app/lib/utils/discount'
 import { createPaymentProof } from '@/app/actions/payments'
 
-export default function PaymentUploadPage() {
+function PaymentUploadContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const planId = searchParams.get('planId')
@@ -169,6 +169,14 @@ export default function PaymentUploadPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function PaymentUploadPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Cargando...</div>}>
+      <PaymentUploadContent />
+    </Suspense>
   )
 }
 
