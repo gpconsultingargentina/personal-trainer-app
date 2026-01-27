@@ -206,3 +206,135 @@ export async function getAvailableClasses(): Promise<Class[]> {
   return data || []
 }
 
+export async function createClassAndBookForStudent(studentId: string, formData: FormData) {
+  const supabase = await createClient()
+
+  const scheduledAt = formData.get('scheduled_at') as string
+  const durationMinutes = parseInt(formData.get('duration_minutes') as string) || 60
+  const maxCapacity = parseInt(formData.get('max_capacity') as string) || 1
+  const description = formData.get('description') as string || null
+
+  // Crear la clase
+  const { data: classData, error: classError } = await supabase
+    .from('classes')
+    .insert({
+      scheduled_at: scheduledAt,
+      duration_minutes: durationMinutes,
+      max_capacity: maxCapacity,
+      current_bookings: 1,
+      status: 'scheduled',
+      description,
+    })
+    .select()
+    .single()
+
+  if (classError) {
+    throw new Error(classError.message)
+  }
+
+  // Crear la reserva para el estudiante
+  const { error: bookingError } = await supabase
+    .from('bookings')
+    .insert({
+      class_id: classData.id,
+      student_id: studentId,
+      status: 'confirmed',
+    })
+
+  if (bookingError) {
+    throw new Error(bookingError.message)
+  }
+
+  revalidatePath('/dashboard/classes')
+  revalidatePath(`/dashboard/students/${studentId}`)
+}
+
+export async function createRecurringClassesForStudent(
+  studentId: string,
+  formData: FormData
+): Promise<{ created: number; errors: number }> {
+  const supabase = await createClient()
+
+  const startDate = formData.get('start_date') as string
+  const daysWithTimes = JSON.parse(formData.get('days_with_times') as string) as Array<{
+    day: number
+    hour: number
+    minute: number
+  }>
+  const repeatWeeks = formData.get('repeat_weeks') as string
+  const durationMinutes = parseInt(formData.get('duration_minutes') as string) || 60
+  const maxCapacity = parseInt(formData.get('max_capacity') as string) || 1
+  const description = formData.get('description') as string || null
+
+  const weeks = repeatWeeks === 'unlimited' ? 52 : parseInt(repeatWeeks)
+  let created = 0
+  let errors = 0
+
+  const start = new Date(startDate)
+
+  for (let week = 0; week < weeks; week++) {
+    for (const dayTime of daysWithTimes) {
+      // Calcular la fecha para este día de la semana
+      const classDate = new Date(start)
+      classDate.setDate(start.getDate() + week * 7)
+
+      // Ajustar al día correcto de la semana
+      const currentDay = classDate.getDay()
+      const targetDay = dayTime.day
+      const daysToAdd = (targetDay - currentDay + 7) % 7
+      classDate.setDate(classDate.getDate() + daysToAdd)
+
+      // Si la fecha calculada es anterior a la fecha de inicio, saltar a la siguiente semana
+      if (classDate < start) {
+        classDate.setDate(classDate.getDate() + 7)
+      }
+
+      // Establecer la hora
+      classDate.setHours(dayTime.hour, dayTime.minute, 0, 0)
+
+      try {
+        // Crear la clase
+        const { data: classData, error: classError } = await supabase
+          .from('classes')
+          .insert({
+            scheduled_at: classDate.toISOString(),
+            duration_minutes: durationMinutes,
+            max_capacity: maxCapacity,
+            current_bookings: 1,
+            status: 'scheduled',
+            description,
+          })
+          .select()
+          .single()
+
+        if (classError) {
+          errors++
+          continue
+        }
+
+        // Crear la reserva
+        const { error: bookingError } = await supabase
+          .from('bookings')
+          .insert({
+            class_id: classData.id,
+            student_id: studentId,
+            status: 'confirmed',
+          })
+
+        if (bookingError) {
+          errors++
+        } else {
+          created++
+        }
+      } catch {
+        errors++
+      }
+    }
+  }
+
+  revalidatePath('/dashboard/classes')
+  revalidatePath(`/dashboard/students/${studentId}`)
+
+  return { created, errors }
+}
+
