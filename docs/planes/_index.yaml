@@ -1,5 +1,9 @@
-ultimo_id: 4
-activos: []
+ultimo_id: 5
+activos:
+  - id: "005"
+    archivo: "005-branding-otakufiit.md"
+    titulo: "Implementar Branding Otakufiit - Dark Mode"
+    estado: "pendiente"
 completados:
   - id: "002"
     archivo: "completados/cerrado-002-migracion-stack-nextjs16-pwa.md"

@@ -8,10 +8,10 @@ export default async function ClassesPage() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Clases</h1>
+        <h1 className="text-3xl font-bold text-foreground">Clases</h1>
         <Link
           href="/dashboard/classes/new"
-          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+          className="px-4 py-2 bg-primary text-background rounded hover:bg-accent"
         >
           Nueva Clase
         </Link>
@@ -21,4 +21,3 @@ export default async function ClassesPage() {
     </div>
   )
 }
-

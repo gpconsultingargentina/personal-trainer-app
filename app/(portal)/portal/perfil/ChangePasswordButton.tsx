@@ -58,7 +58,7 @@ export default function ChangePasswordButton() {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+        className="inline-flex items-center px-4 py-2 border border-border rounded shadow-sm text-sm font-medium text-muted bg-surface hover:bg-surface-alt"
       >
         Cambiar contraseña
       </button>
@@ -67,12 +67,12 @@ export default function ChangePasswordButton() {
 
   if (success) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+      <div className="bg-success/10 border border-success/20 rounded p-4">
         <div className="flex items-center">
-          <svg className="h-5 w-5 text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="h-5 w-5 text-success mr-2" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
           </svg>
-          <p className="text-green-800">Contraseña actualizada correctamente</p>
+          <p className="text-success">Contraseña actualizada correctamente</p>
         </div>
       </div>
     )
@@ -81,13 +81,13 @@ export default function ChangePasswordButton() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">
+        <div className="bg-error/10 border border-error/20 text-error px-4 py-3 rounded text-sm">
           {error}
         </div>
       )}
 
       <div>
-        <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="newPassword" className="block text-sm font-medium text-muted">
           Nueva contraseña
         </label>
         <input
@@ -97,13 +97,13 @@ export default function ChangePasswordButton() {
           minLength={6}
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className="mt-1 block w-full px-3 py-2 border border-border rounded shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
           placeholder="Minimo 6 caracteres"
         />
       </div>
 
       <div>
-        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="confirmPassword" className="block text-sm font-medium text-muted">
           Confirmar nueva contraseña
         </label>
         <input
@@ -112,7 +112,7 @@ export default function ChangePasswordButton() {
           required
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className="mt-1 block w-full px-3 py-2 border border-border rounded shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
           placeholder="Repetir contraseña"
         />
       </div>
@@ -121,7 +121,7 @@ export default function ChangePasswordButton() {
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+          className="inline-flex items-center px-4 py-2 border border-transparent rounded shadow-sm text-sm font-medium text-white bg-primary hover:bg-accent disabled:opacity-50"
         >
           {loading ? 'Guardando...' : 'Guardar'}
         </button>
@@ -134,7 +134,7 @@ export default function ChangePasswordButton() {
             setNewPassword('')
             setConfirmPassword('')
           }}
-          className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+          className="inline-flex items-center px-4 py-2 border border-border rounded shadow-sm text-sm font-medium text-muted bg-surface hover:bg-surface-alt"
         >
           Cancelar
         </button>

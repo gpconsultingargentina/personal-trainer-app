@@ -42,7 +42,7 @@ export default function DateTimeInput({
   return (
     <div>
       {label && (
-        <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor={id} className="block text-sm font-medium text-muted mb-1">
           {label}
         </label>
       )}
@@ -53,7 +53,7 @@ export default function DateTimeInput({
           value={dateValue}
           onChange={(e) => setDateValue(e.target.value)}
           required={required}
-          className={`flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${className}`}
+          className={`flex-1 rounded border-border shadow-sm focus:border-primary focus:ring-primary sm:text-sm ${className}`}
         />
         <div className="flex-1">
           <TimeInput

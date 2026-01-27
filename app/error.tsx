@@ -25,16 +25,16 @@ export default function Error({
   }, [error])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-4 p-8 bg-white rounded-lg shadow-md text-center">
-        <h2 className="text-2xl font-bold text-gray-900">Algo salió mal</h2>
-        <p className="text-gray-600">{error?.message || 'Ocurrió un error inesperado'}</p>
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="max-w-md w-full space-y-4 p-8 bg-surface rounded shadow-md text-center">
+        <h2 className="text-2xl font-bold text-foreground">Algo salió mal</h2>
+        <p className="text-muted">{error?.message || 'Ocurrió un error inesperado'}</p>
         <div className="space-y-2 mt-4">
           <button
             onClick={() => {
               reset()
             }}
-            className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+            className="w-full px-4 py-2 bg-primary text-background rounded hover:bg-accent"
           >
             Intentar de nuevo
           </button>
@@ -43,7 +43,7 @@ export default function Error({
               onClick={() => {
                 router.push('/login')
               }}
-              className="w-full px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+              className="w-full px-4 py-2 bg-surface-alt text-foreground rounded hover:bg-border"
             >
               Ir al Login
             </button>
@@ -52,7 +52,7 @@ export default function Error({
             onClick={() => {
               router.push('/')
             }}
-            className="w-full px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+            className="w-full px-4 py-2 bg-border text-foreground rounded hover:bg-muted"
           >
             Ir al Inicio
           </button>

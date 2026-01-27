@@ -110,19 +110,19 @@ export default function AddClassToStudent({ studentId }: AddClassToStudentProps)
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+        className="px-4 py-2 bg-primary text-white rounded hover:bg-accent"
       >
         Agregar Clases
       </button>
 
       {isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-4 sm:p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto overflow-x-hidden">
+          <div className="bg-surface rounded p-4 sm:p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto overflow-x-hidden">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Agendar Clases Recurrentes</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground">Agendar Clases Recurrentes</h2>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full"
+                className="p-2 text-muted hover:text-foreground hover:bg-background rounded-full"
                 aria-label="Cerrar"
               >
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -133,14 +133,14 @@ export default function AddClassToStudent({ studentId }: AddClassToStudentProps)
 
             <form onSubmit={handleSubmit} className="space-y-6">
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                <div className="bg-error/10 border border-error text-error px-4 py-3 rounded">
                   {error}
                 </div>
               )}
 
               {/* Fecha de inicio */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-muted mb-2">
                   Fecha de Inicio *
                 </label>
                 <input
@@ -149,13 +149,13 @@ export default function AddClassToStudent({ studentId }: AddClassToStudentProps)
                   onChange={(e) => setStartDate(e.target.value)}
                   min={today}
                   required
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="w-full rounded border-border shadow-sm focus:border-primary focus:ring-primary"
                 />
               </div>
 
               {/* Duración */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-muted mb-2">
                   Duración de las Clases (minutos) *
                 </label>
                 <input
@@ -165,13 +165,13 @@ export default function AddClassToStudent({ studentId }: AddClassToStudentProps)
                   min="15"
                   step="15"
                   required
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="w-full rounded border-border shadow-sm focus:border-primary focus:ring-primary"
                 />
               </div>
 
               {/* Capacidad máxima */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-muted mb-2">
                   Capacidad Máxima por Clase *
                 </label>
                 <input
@@ -180,20 +180,20 @@ export default function AddClassToStudent({ studentId }: AddClassToStudentProps)
                   onChange={(e) => setMaxCapacity(parseInt(e.target.value) || 1)}
                   min="1"
                   required
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="w-full rounded border-border shadow-sm focus:border-primary focus:ring-primary"
                 />
               </div>
 
               {/* Período de repetición */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-muted mb-2">
                   Repetir durante *
                 </label>
                 <select
                   value={duration}
                   onChange={(e) => setDuration(parseInt(e.target.value))}
                   required
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className="w-full rounded border-border shadow-sm focus:border-primary focus:ring-primary"
                 >
                   {DURATION_OPTIONS.map(option => (
                     <option key={option.value} value={option.value}>
@@ -205,7 +205,7 @@ export default function AddClassToStudent({ studentId }: AddClassToStudentProps)
 
               {/* Días de la semana y horarios */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-muted mb-2">
                   Días de la Semana y Horarios *
                 </label>
                 <div className="space-y-3">
@@ -214,8 +214,8 @@ export default function AddClassToStudent({ studentId }: AddClassToStudentProps)
                     return (
                       <div
                         key={day.value}
-                        className={`p-3 border rounded-md ${
-                          isSelected ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300'
+                        className={`p-3 border rounded ${
+                          isSelected ? 'border-primary bg-primary/10' : 'border-border'
                         }`}
                       >
                         <div className="flex items-center justify-between">
@@ -224,9 +224,9 @@ export default function AddClassToStudent({ studentId }: AddClassToStudentProps)
                               type="checkbox"
                               checked={isSelected}
                               onChange={() => toggleDay(day.value)}
-                              className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                              className="rounded border-border text-primary focus:ring-primary"
                             />
-                            <span className="ml-2 text-sm font-medium text-gray-700">
+                            <span className="ml-2 text-sm font-medium text-muted">
                               {day.label}
                             </span>
                           </label>
@@ -248,9 +248,9 @@ export default function AddClassToStudent({ studentId }: AddClassToStudentProps)
 
               {/* Resumen */}
               {selectedDays.length > 0 && startDate && (
-                <div className="bg-gray-50 p-4 rounded-md">
-                  <p className="text-sm font-medium text-gray-700 mb-2">Resumen:</p>
-                  <ul className="text-sm text-gray-600 space-y-1">
+                <div className="bg-background p-4 rounded">
+                  <p className="text-sm font-medium text-muted mb-2">Resumen:</p>
+                  <ul className="text-sm text-muted space-y-1">
                     <li>
                       Se crearán clases para {selectedDays.length} día(s) por semana
                     </li>
@@ -268,14 +268,14 @@ export default function AddClassToStudent({ studentId }: AddClassToStudentProps)
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="px-4 py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                  className="px-4 py-3 border border-border rounded text-muted hover:bg-surface-alt"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-3 bg-primary text-white rounded hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submitting ? 'Creando clases...' : 'Crear Clases'}
                 </button>

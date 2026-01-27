@@ -68,7 +68,7 @@ export default function ClassesList({ classes }: ClassesListProps) {
 
   if (classes.length === 0) {
     return (
-      <li className="px-6 py-4 text-center text-gray-500">
+      <li className="px-6 py-4 text-center text-muted">
         No hay clases creadas aún
       </li>
     )
@@ -77,7 +77,7 @@ export default function ClassesList({ classes }: ClassesListProps) {
   return (
     <>
       {/* Barra de acciones con selección masiva */}
-      <div className="px-4 sm:px-6 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between flex-wrap gap-2">
+      <div className="px-4 sm:px-6 py-3 bg-background border-b border-border flex items-center justify-between flex-wrap gap-2">
         <label className="flex items-center cursor-pointer">
           <span className="p-2 -m-2">
             <input
@@ -85,10 +85,10 @@ export default function ClassesList({ classes }: ClassesListProps) {
               ref={selectAllRef}
               checked={allSelected}
               onChange={toggleSelectAll}
-              className="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+              className="h-5 w-5 rounded border-border text-primary focus:ring-primary"
             />
           </span>
-          <span className="ml-3 text-sm font-medium text-gray-700">
+          <span className="ml-3 text-sm font-medium text-muted">
             Seleccionar todas ({classes.length})
           </span>
         </label>
@@ -96,7 +96,7 @@ export default function ClassesList({ classes }: ClassesListProps) {
           <button
             onClick={handleDeleteSelected}
             disabled={isPending}
-            className="px-4 py-3 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            className="px-4 py-3 bg-error text-white rounded hover:bg-error/80 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
           >
             {isPending ? 'Eliminando...' : `Eliminar ${selectedIds.size}`}
           </button>
@@ -114,22 +114,22 @@ export default function ClassesList({ classes }: ClassesListProps) {
                   type="checkbox"
                   checked={isSelected}
                   onChange={() => toggleSelect(classItem.id)}
-                  className="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  className="h-5 w-5 rounded border-border text-primary focus:ring-primary"
                 />
               </span>
               <div className="flex-1 flex items-center justify-between">
                 <div className="flex-1">
                   <div className="flex items-center">
-                    <h3 className="text-lg font-medium text-gray-900">
+                    <h3 className="text-lg font-medium text-foreground">
                       {formatDateTime24h(classItem.scheduled_at)}
                     </h3>
                     <span
                       className={`ml-2 px-2 py-1 text-xs font-medium rounded-full ${
                         classItem.status === 'scheduled'
-                          ? 'bg-green-100 text-green-800'
+                          ? 'bg-success/10 text-success'
                           : classItem.status === 'completed'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-red-100 text-red-800'
+                          ? 'bg-primary/10 text-primary'
+                          : 'bg-error/10 text-error'
                       }`}
                     >
                       {classItem.status === 'scheduled'
@@ -139,17 +139,17 @@ export default function ClassesList({ classes }: ClassesListProps) {
                         : 'Cancelada'}
                     </span>
                   </div>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-muted">
                     Duración: {classItem.duration_minutes} min | Capacidad:{' '}
                     {classItem.current_bookings}/{classItem.max_capacity}
                   </p>
                   {classItem.students && classItem.students.length > 0 && (
-                    <p className="mt-1 text-sm text-gray-700 font-medium">
+                    <p className="mt-1 text-sm text-muted font-medium">
                       {classItem.students.map((student: { id: string; name: string }) => student.name).join(', ')}
                     </p>
                   )}
                   {classItem.description && (
-                    <p className="mt-1 text-sm text-gray-600">
+                    <p className="mt-1 text-sm text-muted">
                       {classItem.description}
                     </p>
                   )}
@@ -157,7 +157,7 @@ export default function ClassesList({ classes }: ClassesListProps) {
                 <div className="flex space-x-2 ml-4">
                   <Link
                     href={`/dashboard/classes/${classItem.id}`}
-                    className="text-indigo-600 hover:text-indigo-900"
+                    className="text-primary hover:text-accent"
                   >
                     Editar
                   </Link>

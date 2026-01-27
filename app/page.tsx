@@ -1,6 +1,7 @@
 import { createClient } from '@/app/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default async function Home() {
   const supabase = await createClient()
@@ -17,13 +18,20 @@ export default async function Home() {
   redirect('/login')
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-white">
+    <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-gray-900 mb-4">
-            Personal Trainer App
+          <Image
+            src="/logo.png"
+            alt="Otakufiit"
+            width={120}
+            height={120}
+            className="mx-auto rounded mb-6"
+          />
+          <h1 className="text-5xl font-bold text-foreground mb-4">
+            Otakufiit
           </h1>
-          <p className="text-xl text-gray-600">
+          <p className="text-xl text-muted">
             Sistema de gestión de clases y reservas
           </p>
         </div>
@@ -32,12 +40,12 @@ export default async function Home() {
           {/* Card para Reservar Clases */}
           <Link
             href="/public/book"
-            className="bg-white rounded-lg shadow-lg p-8 hover:shadow-xl transition-shadow border-2 border-transparent hover:border-indigo-500"
+            className="bg-surface rounded shadow-lg p-8 hover:shadow-xl transition-shadow border-2 border-transparent hover:border-primary"
           >
             <div className="text-center">
               <div className="mb-4">
                 <svg
-                  className="h-16 w-16 mx-auto text-indigo-600"
+                  className="h-16 w-16 mx-auto text-primary"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -50,10 +58,10 @@ export default async function Home() {
                   />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              <h2 className="text-2xl font-bold text-foreground mb-2">
                 Reservar Clase
               </h2>
-              <p className="text-gray-600">
+              <p className="text-muted">
                 Consulta las clases disponibles y reserva tu lugar
               </p>
             </div>
@@ -62,12 +70,12 @@ export default async function Home() {
           {/* Card para Login del Entrenador */}
           <Link
             href="/login"
-            className="bg-white rounded-lg shadow-lg p-8 hover:shadow-xl transition-shadow border-2 border-transparent hover:border-indigo-500"
+            className="bg-surface rounded shadow-lg p-8 hover:shadow-xl transition-shadow border-2 border-transparent hover:border-primary"
           >
             <div className="text-center">
               <div className="mb-4">
                 <svg
-                  className="h-16 w-16 mx-auto text-indigo-600"
+                  className="h-16 w-16 mx-auto text-primary"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -80,10 +88,10 @@ export default async function Home() {
                   />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              <h2 className="text-2xl font-bold text-foreground mb-2">
                 Área del Entrenador
               </h2>
-              <p className="text-gray-600">
+              <p className="text-muted">
                 Accede al panel de administración y gestión
               </p>
             </div>
@@ -91,7 +99,7 @@ export default async function Home() {
         </div>
 
         <div className="mt-12 text-center">
-          <p className="text-gray-500 text-sm">
+          <p className="text-muted text-sm">
             ¿Necesitas ayuda? Contacta con tu entrenador personal
           </p>
         </div>
@@ -99,4 +107,3 @@ export default async function Home() {
     </div>
   )
 }
-

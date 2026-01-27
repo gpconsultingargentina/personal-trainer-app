@@ -38,7 +38,7 @@ export default function StudentForm({ student, frequencies = [] }: StudentFormPr
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="bg-error/10 border border-error text-error px-4 py-3 rounded">
           {error}
         </div>
       )}
@@ -46,7 +46,7 @@ export default function StudentForm({ student, frequencies = [] }: StudentFormPr
       <div>
         <label
           htmlFor="name"
-          className="block text-sm font-medium text-gray-700"
+          className="block text-sm font-medium text-muted"
         >
           Nombre y Apellido *
         </label>
@@ -56,14 +56,14 @@ export default function StudentForm({ student, frequencies = [] }: StudentFormPr
           name="name"
           required
           defaultValue={student?.name}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          className="mt-1 block w-full rounded border-border shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
         />
       </div>
 
       <div>
         <label
           htmlFor="email"
-          className="block text-sm font-medium text-gray-700"
+          className="block text-sm font-medium text-muted"
         >
           E-mail *
         </label>
@@ -73,14 +73,14 @@ export default function StudentForm({ student, frequencies = [] }: StudentFormPr
           name="email"
           required
           defaultValue={student?.email}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          className="mt-1 block w-full rounded border-border shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
         />
       </div>
 
       <div>
         <label
           htmlFor="phone"
-          className="block text-sm font-medium text-gray-700"
+          className="block text-sm font-medium text-muted"
         >
           Celular *
         </label>
@@ -92,7 +92,7 @@ export default function StudentForm({ student, frequencies = [] }: StudentFormPr
           autoComplete="tel"
           required
           defaultValue={student?.phone || ''}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base py-2"
+          className="mt-1 block w-full rounded border-border shadow-sm focus:border-primary focus:ring-primary text-base py-2"
         />
       </div>
 
@@ -100,7 +100,7 @@ export default function StudentForm({ student, frequencies = [] }: StudentFormPr
         <div>
           <label
             htmlFor="frequency_id"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-muted"
           >
             Frecuencia Habitual
           </label>
@@ -109,7 +109,7 @@ export default function StudentForm({ student, frequencies = [] }: StudentFormPr
             name="frequency_id"
             value={frequencyId}
             onChange={(e) => setFrequencyId(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            className="mt-1 block w-full rounded border-border shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
           >
             <option value="">Sin frecuencia asignada</option>
             {frequencies.map((freq) => (
@@ -119,7 +119,7 @@ export default function StudentForm({ student, frequencies = [] }: StudentFormPr
             ))}
           </select>
           {selectedFrequency && (
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-muted">
               Precio por clase: ${selectedFrequency.price_per_class.toLocaleString('es-AR')}
             </p>
           )}
@@ -130,14 +130,14 @@ export default function StudentForm({ student, frequencies = [] }: StudentFormPr
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+          className="px-4 py-3 border border-border rounded shadow-sm text-sm font-medium text-muted bg-surface hover:bg-surface-alt"
         >
           Cancelar
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+          className="px-4 py-3 border border-transparent rounded shadow-sm text-sm font-medium text-white bg-primary hover:bg-accent disabled:opacity-50"
         >
           {loading ? 'Guardando...' : 'Crear'}
         </button>

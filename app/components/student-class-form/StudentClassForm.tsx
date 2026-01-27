@@ -159,20 +159,20 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="bg-error/10 border border-error text-error px-4 py-3 rounded">
           {error}
         </div>
       )}
 
-      <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-        <p className="text-sm text-blue-800">
+      <div className="bg-primary/10 border border-primary rounded p-4">
+        <p className="text-sm text-primary">
           Las clases se crearán y se reservarán automáticamente para <strong>{studentName}</strong>
         </p>
       </div>
 
       {/* Selector de modo */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-muted mb-2">
           Tipo de Clase *
         </label>
         <div className="flex space-x-4">
@@ -204,12 +204,12 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
       {mode === 'single' ? (
         /* Modo simple: una clase única */
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-muted mb-2">
             Fecha y Hora * (Formato 24 horas)
           </label>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label htmlFor="date" className="block text-xs font-medium text-gray-600 mb-1">
+              <label htmlFor="date" className="block text-xs font-medium text-muted mb-1">
                 Fecha
               </label>
               <input
@@ -218,11 +218,11 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
                 required={mode === 'single'}
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="mt-1 block w-full rounded border-border shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
               />
             </div>
             <div>
-              <label htmlFor="hour" className="block text-xs font-medium text-gray-600 mb-1">
+              <label htmlFor="hour" className="block text-xs font-medium text-muted mb-1">
                 Hora (00-23)
               </label>
               <select
@@ -230,7 +230,7 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
                 required={mode === 'single'}
                 value={hour}
                 onChange={(e) => setHour(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="mt-1 block w-full rounded border-border shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
               >
                 {hours.map((h) => (
                   <option key={h} value={h}>
@@ -240,7 +240,7 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
               </select>
             </div>
             <div>
-              <label htmlFor="minute" className="block text-xs font-medium text-gray-600 mb-1">
+              <label htmlFor="minute" className="block text-xs font-medium text-muted mb-1">
                 Minutos (00-59)
               </label>
               <select
@@ -248,7 +248,7 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
                 required={mode === 'single'}
                 value={minute}
                 onChange={(e) => setMinute(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="mt-1 block w-full rounded border-border shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
               >
                 {minutes.map((m) => (
                   <option key={m} value={m}>
@@ -258,7 +258,7 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
               </select>
             </div>
           </div>
-          <p className="mt-2 text-xs text-gray-500">
+          <p className="mt-2 text-xs text-muted">
             Hora seleccionada: {date ? `${date} ${hour}:${minute}` : 'Selecciona fecha y hora'}
           </p>
         </div>
@@ -266,7 +266,7 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
         /* Modo recurrente: múltiples clases semanales */
         <div className="space-y-4">
           <div>
-            <label htmlFor="start_date" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="start_date" className="block text-sm font-medium text-muted mb-2">
               Fecha de Inicio *
             </label>
             <input
@@ -275,12 +275,12 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
               required={mode === 'recurring'}
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="mt-1 block w-full rounded border-border shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-muted mb-2">
               Días de la Semana * (Selecciona 1-5 días y configura la hora para cada uno)
             </label>
             <div className="space-y-3 mt-2">
@@ -291,10 +291,10 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
                 return (
                   <div
                     key={day.value}
-                    className={`p-4 border-2 rounded-md transition-colors ${
+                    className={`p-4 border-2 rounded transition-colors ${
                       isSelected
-                        ? 'border-indigo-500 bg-indigo-50'
-                        : 'border-gray-200 bg-gray-50'
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border bg-background'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-3">
@@ -304,10 +304,10 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
                           checked={isSelected}
                           onChange={() => toggleDay(day.value)}
                           disabled={!isSelected && selectedDays.length >= 5}
-                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                          className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
                         />
                         <span className={`ml-3 text-sm font-medium ${
-                          isSelected ? 'text-indigo-700' : 'text-gray-500'
+                          isSelected ? 'text-primary' : 'text-muted'
                         }`}>
                           {day.label}
                         </span>
@@ -315,14 +315,14 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
                       {isSelected && (
                         <div className="flex items-center space-x-2">
                           <div className="flex items-center space-x-1">
-                            <label htmlFor={`hour_${day.value}`} className="text-sm text-gray-600">
+                            <label htmlFor={`hour_${day.value}`} className="text-sm text-muted">
                               Hora:
                             </label>
                             <select
                               id={`hour_${day.value}`}
                               value={dayTime.hour}
                               onChange={(e) => updateDayTime(day.value, 'hour', e.target.value)}
-                              className="block w-16 sm:w-20 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base py-2"
+                              className="block w-16 sm:w-20 rounded border-border shadow-sm focus:border-primary focus:ring-primary text-base py-2"
                             >
                               {hours.map((h) => (
                                 <option key={h} value={h}>
@@ -331,16 +331,16 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
                               ))}
                             </select>
                           </div>
-                          <span className="text-gray-400">:</span>
+                          <span className="text-muted">:</span>
                           <div className="flex items-center space-x-1">
-                            <label htmlFor={`minute_${day.value}`} className="text-sm text-gray-600">
+                            <label htmlFor={`minute_${day.value}`} className="text-sm text-muted">
                               Min:
                             </label>
                             <select
                               id={`minute_${day.value}`}
                               value={dayTime.minute}
                               onChange={(e) => updateDayTime(day.value, 'minute', e.target.value)}
-                              className="block w-16 sm:w-20 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base py-2"
+                              className="block w-16 sm:w-20 rounded border-border shadow-sm focus:border-primary focus:ring-primary text-base py-2"
                             >
                               {minutes.map((m) => (
                                 <option key={m} value={m}>
@@ -353,7 +353,7 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
                       )}
                     </div>
                     {isSelected && (
-                      <p className="text-xs text-gray-600 ml-7">
+                      <p className="text-xs text-muted ml-7">
                         Clase a las {dayTime.hour}:{dayTime.minute}
                       </p>
                     )}
@@ -361,15 +361,15 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
                 )
               })}
             </div>
-            <p className="mt-3 text-xs text-gray-500">
-              {selectedDays.length === 0 
+            <p className="mt-3 text-xs text-muted">
+              {selectedDays.length === 0
                 ? 'Selecciona al menos un día'
                 : `${selectedDays.length} día(s) seleccionado(s)`}
             </p>
           </div>
 
           <div>
-            <label htmlFor="repeat_weeks" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="repeat_weeks" className="block text-sm font-medium text-muted">
               Repetir durante *
             </label>
             <select
@@ -377,7 +377,7 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
               required={mode === 'recurring'}
               value={repeatWeeks}
               onChange={(e) => setRepeatWeeks(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="mt-1 block w-full rounded border-border shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
             >
               <option value="4">4 semanas (1 mes)</option>
               <option value="8">8 semanas (2 meses)</option>
@@ -386,8 +386,8 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
               <option value="52">52 semanas (1 año)</option>
               <option value="unlimited">Indefinidamente (1 año)</option>
             </select>
-            <p className="mt-1 text-xs text-gray-500">
-              {repeatWeeks === 'unlimited' 
+            <p className="mt-1 text-xs text-muted">
+              {repeatWeeks === 'unlimited'
                 ? 'Se crearán clases para 1 año (52 semanas)'
                 : `Se crearán clases para ${repeatWeeks} semanas`}
             </p>
@@ -399,7 +399,7 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
         <div>
           <label
             htmlFor="duration_minutes"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-muted"
           >
             Duración (minutos) *
           </label>
@@ -411,14 +411,14 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
             step="15"
             required
             defaultValue={60}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            className="mt-1 block w-full rounded border-border shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
           />
         </div>
 
         <div>
           <label
             htmlFor="max_capacity"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-muted"
           >
             Capacidad Máxima *
           </label>
@@ -429,7 +429,7 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
             min="1"
             required
             defaultValue={1}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            className="mt-1 block w-full rounded border-border shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
           />
         </div>
       </div>
@@ -437,7 +437,7 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
       <div>
         <label
           htmlFor="description"
-          className="block text-sm font-medium text-gray-700"
+          className="block text-sm font-medium text-muted"
         >
           Descripción
         </label>
@@ -446,7 +446,7 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
           name="description"
           rows={4}
           defaultValue=""
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          className="mt-1 block w-full rounded border-border shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
         />
       </div>
 
@@ -454,14 +454,14 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+          className="px-4 py-3 border border-border rounded shadow-sm text-sm font-medium text-muted bg-surface hover:bg-surface-alt"
         >
           Cancelar
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+          className="px-4 py-3 border border-transparent rounded shadow-sm text-sm font-medium text-white bg-primary hover:bg-accent disabled:opacity-50"
         >
           {loading
             ? (mode === 'recurring' ? 'Creando clases...' : 'Creando...')

@@ -19,10 +19,10 @@ export default async function NewStudentPaymentPage({
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">
+      <h1 className="text-3xl font-bold text-foreground mb-6">
         Registrar Pago de {student.name}
       </h1>
-      <div className="bg-white shadow rounded-lg p-6">
+      <div className="bg-surface shadow rounded p-6">
         <CreditPaymentForm
           studentId={student.id}
           studentName={student.name}

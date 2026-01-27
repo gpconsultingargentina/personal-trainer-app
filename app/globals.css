@@ -1,21 +1,42 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: #ffffff;
-  --color-foreground: #171717;
-}
+  /* Brand Colors */
+  --color-primary: #FD9800;
+  --color-accent: #E98C00;
 
-@media (prefers-color-scheme: dark) {
-  @theme {
-    --color-background: #0a0a0a;
-    --color-foreground: #ededed;
-  }
+  /* Background & Surface */
+  --color-background: #161923;
+  --color-surface: #1E2330;
+  --color-surface-alt: #252A3A;
+
+  /* Text */
+  --color-foreground: #FFFFFF;
+  --color-muted: #9CA3AF;
+
+  /* Borders */
+  --color-border: #374151;
+
+  /* States */
+  --color-error: #EF4444;
+  --color-success: #22C55E;
+
+  /* Typography */
+  --font-sans: var(--font-poppins), sans-serif;
+
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-DEFAULT: 4px;
+  --radius-md: 4px;
+  --radius-lg: 4px;
 }
 
 body {
   color: var(--color-foreground);
   background: var(--color-background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.5;
 }
 
 /* Forzar formato 24 horas en inputs de tiempo */
@@ -24,14 +45,15 @@ input[type="time"] {
 }
 
 input[type="time"]::-webkit-calendar-picker-indicator {
-  filter: invert(0);
+  filter: invert(1);
 }
 
-/* Texto negro en inputs y textareas para mejor contraste */
+/* Inputs con fondo claro para contraste */
 input,
 textarea,
 select {
-  color: #000000;
+  color: #161923;
+  background-color: #FFFFFF;
 }
 
 input::placeholder,
@@ -39,3 +61,11 @@ textarea::placeholder {
   color: #9ca3af;
 }
 
+/* Focus rings con color primario */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(253, 152, 0, 0.2);
+}

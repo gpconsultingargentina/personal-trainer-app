@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 import { validateRegistrationToken } from '@/app/actions/registration'
 import { registerStudent } from '@/app/actions/auth'
 
@@ -94,10 +95,10 @@ function RegistroForm() {
   // Estado de carga
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Validando enlace de registro...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted">Validando enlace de registro...</p>
         </div>
       </div>
     )
@@ -106,19 +107,19 @@ function RegistroForm() {
   // Token inválido o error
   if (error && !student) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="max-w-md w-full space-y-8 p-8 bg-surface rounded shadow-md">
           <div className="text-center">
-            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-              <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-error/10">
+              <svg className="h-6 w-6 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </div>
-            <h2 className="mt-4 text-2xl font-bold text-gray-900">
+            <h2 className="mt-4 text-2xl font-bold text-foreground">
               Enlace Inválido
             </h2>
-            <p className="mt-2 text-gray-600">{error}</p>
-            <p className="mt-4 text-sm text-gray-500">
+            <p className="mt-2 text-muted">{error}</p>
+            <p className="mt-4 text-sm text-muted">
               Si necesitas un nuevo enlace de registro, contacta a tu entrenador.
             </p>
           </div>
@@ -130,21 +131,21 @@ function RegistroForm() {
   // Registro exitoso
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="max-w-md w-full space-y-8 p-8 bg-surface rounded shadow-md">
           <div className="text-center">
-            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
-              <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-success/10">
+              <svg className="h-6 w-6 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="mt-4 text-2xl font-bold text-gray-900">
+            <h2 className="mt-4 text-2xl font-bold text-foreground">
               Cuenta Creada
             </h2>
-            <p className="mt-2 text-gray-600">
+            <p className="mt-2 text-muted">
               Tu cuenta ha sido creada exitosamente.
             </p>
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-muted">
               Redirigiendo al inicio de sesión...
             </p>
           </div>
@@ -155,27 +156,34 @@ function RegistroForm() {
 
   // Formulario de registro
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
-        <div>
-          <h2 className="text-center text-3xl font-extrabold text-gray-900">
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="max-w-md w-full space-y-8 p-8 bg-surface rounded shadow-md">
+        <div className="text-center">
+          <Image
+            src="/logo.png"
+            alt="Otakufiit"
+            width={80}
+            height={80}
+            className="mx-auto rounded"
+          />
+          <h2 className="mt-4 text-3xl font-extrabold text-foreground">
             Crear Cuenta
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-sm text-muted">
             Bienvenido/a, {student?.name}
           </p>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            <div className="bg-error/10 border border-error/20 text-error px-4 py-3 rounded">
               {error}
             </div>
           )}
 
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-sm font-medium text-foreground">
                 Email
               </label>
               <input
@@ -183,15 +191,15 @@ function RegistroForm() {
                 type="email"
                 disabled
                 value={student?.email || ''}
-                className="mt-1 block w-full px-3 py-3 border border-gray-300 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed"
+                className="mt-1 block w-full px-3 py-3 border border-border rounded bg-surface-alt text-muted cursor-not-allowed"
               />
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-muted">
                 Este será tu email para iniciar sesión
               </p>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-medium text-foreground">
                 Contraseña
               </label>
               <input
@@ -200,7 +208,7 @@ function RegistroForm() {
                 type="password"
                 required
                 minLength={6}
-                className="mt-1 block w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="mt-1 block w-full px-3 py-3 border border-border rounded shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
                 placeholder="Mínimo 6 caracteres"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -208,7 +216,7 @@ function RegistroForm() {
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground">
                 Confirmar Contraseña
               </label>
               <input
@@ -216,7 +224,7 @@ function RegistroForm() {
                 name="confirmPassword"
                 type="password"
                 required
-                className="mt-1 block w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="mt-1 block w-full px-3 py-3 border border-border rounded shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
                 placeholder="Repetir contraseña"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -228,16 +236,16 @@ function RegistroForm() {
             <button
               type="submit"
               disabled={validating}
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded shadow-sm text-base font-medium text-background bg-primary hover:bg-accent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {validating ? 'Creando cuenta...' : 'Crear Cuenta'}
             </button>
           </div>
         </form>
 
-        <p className="text-center text-sm text-gray-500">
+        <p className="text-center text-sm text-muted">
           ¿Ya tienes cuenta?{' '}
-          <a href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+          <a href="/login" className="font-medium text-primary hover:text-accent">
             Iniciar sesión
           </a>
         </p>
@@ -248,10 +256,10 @@ function RegistroForm() {
 
 function LoadingState() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-        <p className="mt-4 text-gray-600">Cargando...</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+        <p className="mt-4 text-muted">Cargando...</p>
       </div>
     </div>
   )

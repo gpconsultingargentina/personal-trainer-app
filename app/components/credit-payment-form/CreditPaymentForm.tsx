@@ -111,8 +111,8 @@ export default function CreditPaymentForm({
 
   if (!frequency) {
     return (
-      <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-        <p className="text-sm text-yellow-800">
+      <div className="bg-primary/10 border border-primary rounded p-4">
+        <p className="text-sm text-primary">
           Este alumno no tiene una frecuencia asignada. Por favor, asigna una frecuencia antes de registrar un pago.
         </p>
       </div>
@@ -122,31 +122,31 @@ export default function CreditPaymentForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="bg-error/10 border border-error text-error px-4 py-3 rounded">
           {error}
         </div>
       )}
 
-      <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-        <p className="text-sm text-blue-800">
+      <div className="bg-primary/10 border border-primary rounded p-4">
+        <p className="text-sm text-primary">
           Comprobante para <strong>{studentName}</strong>
         </p>
-        <p className="text-sm text-blue-700 mt-1">
+        <p className="text-sm text-primary mt-1">
           Frecuencia: {frequency.description} | Creditos actuales: {currentCredits}
         </p>
       </div>
 
-      <div className="bg-indigo-50 rounded-lg p-4">
-        <p className="text-sm font-medium text-indigo-900 mb-2">
+      <div className="bg-primary/10 rounded p-4">
+        <p className="text-sm font-medium text-foreground mb-2">
           Precio por clase: ${pricePerClass.toLocaleString('es-AR')}
         </p>
-        <p className="text-xs text-indigo-700">
+        <p className="text-xs text-primary">
           Basado en frecuencia {frequency.frequency_code} ({frequency.description})
         </p>
       </div>
 
       <div>
-        <label htmlFor="classes_count" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="classes_count" className="block text-sm font-medium text-muted">
           Cantidad de Clases a Comprar *
         </label>
         <input
@@ -156,9 +156,9 @@ export default function CreditPaymentForm({
           max={100}
           value={classesCount}
           onChange={(e) => setClassesCount(parseInt(e.target.value) || 1)}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          className="mt-1 block w-full rounded border-border shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
         />
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm text-muted">
           Los creditos vencen a los 60 dias de la compra
         </p>
       </div>
@@ -169,10 +169,10 @@ export default function CreditPaymentForm({
             key={count}
             type="button"
             onClick={() => setClassesCount(count)}
-            className={`px-3 py-2 text-sm rounded-md border ${
+            className={`px-3 py-2 text-sm rounded border ${
               classesCount === count
-                ? 'bg-indigo-100 border-indigo-500 text-indigo-700'
-                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                ? 'bg-primary/10 border-primary text-primary'
+                : 'bg-surface border-border text-muted hover:bg-surface-alt'
             }`}
           >
             {count} clases
@@ -180,41 +180,41 @@ export default function CreditPaymentForm({
         ))}
       </div>
 
-      <div className="bg-gray-50 rounded-lg p-4">
-        <p className="text-sm text-gray-600">Total a pagar:</p>
-        <p className="text-2xl font-bold text-gray-900">
+      <div className="bg-background rounded p-4">
+        <p className="text-sm text-muted">Total a pagar:</p>
+        <p className="text-2xl font-bold text-foreground">
           ${totalPrice.toLocaleString('es-AR')}
         </p>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-muted mb-2">
           Comprobante de Pago *
         </label>
         <div
           {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer ${
+          className={`border-2 border-dashed rounded p-6 text-center cursor-pointer ${
             isDragActive
-              ? 'border-indigo-500 bg-indigo-50'
-              : 'border-gray-300 hover:border-gray-400'
+              ? 'border-primary bg-primary/10'
+              : 'border-border hover:border-muted'
           }`}
         >
           <input {...getInputProps()} />
           {file ? (
             <div>
-              <p className="text-sm text-gray-700">{file.name}</p>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-sm text-muted">{file.name}</p>
+              <p className="text-xs text-muted mt-1">
                 {(file.size / 1024 / 1024).toFixed(2)} MB
               </p>
             </div>
           ) : (
             <div>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted">
                 {isDragActive
                   ? 'Suelta el archivo aqui'
                   : 'Arrastra y suelta el archivo aqui, o haz clic para seleccionar'}
               </p>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted mt-1">
                 JPG, PNG o PDF (maximo 5MB)
               </p>
             </div>
@@ -226,14 +226,14 @@ export default function CreditPaymentForm({
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+          className="px-4 py-3 border border-border rounded shadow-sm text-sm font-medium text-muted bg-surface hover:bg-surface-alt"
         >
           Cancelar
         </button>
         <button
           type="submit"
           disabled={loading || classesCount < 1 || !file}
-          className="px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-3 border border-transparent rounded shadow-sm text-sm font-medium text-white bg-primary hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? 'Subiendo...' : `Subir Comprobante ($${totalPrice.toLocaleString('es-AR')})`}
         </button>

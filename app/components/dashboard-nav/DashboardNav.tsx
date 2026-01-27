@@ -2,13 +2,13 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { logout } from '@/app/actions/auth'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/dashboard/classes', label: 'Clases' },
-  { href: '/dashboard/plans', label: 'Planes' },
   { href: '/dashboard/payments', label: 'Pagos' },
   { href: '/dashboard/students', label: 'Alumnos' },
   { href: '/dashboard/reports', label: 'Reportes' },
@@ -26,12 +26,18 @@ export default function DashboardNav() {
   }
 
   return (
-    <nav className="bg-white shadow-sm">
+    <nav className="bg-surface shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">Otakufiit</h1>
+              <Image
+                src="/logo.png"
+                alt="Otakufiit"
+                width={40}
+                height={40}
+                className="rounded"
+              />
             </div>
             {/* Desktop nav */}
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
@@ -41,8 +47,8 @@ export default function DashboardNav() {
                   href={item.href}
                   className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
                     isActive(item.href)
-                      ? 'border-indigo-500 text-gray-900'
-                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                      ? 'border-primary text-foreground'
+                      : 'border-transparent text-muted hover:border-border hover:text-foreground'
                   }`}
                 >
                   {item.label}
@@ -56,7 +62,7 @@ export default function DashboardNav() {
             <form action={logout} className="hidden sm:block">
               <button
                 type="submit"
-                className="text-gray-500 hover:text-gray-700 px-3 py-3 rounded-md text-sm font-medium"
+                className="text-muted hover:text-foreground px-3 py-3 rounded text-sm font-medium"
               >
                 Cerrar Sesion
               </button>
@@ -66,7 +72,7 @@ export default function DashboardNav() {
             <button
               type="button"
               onClick={() => setIsOpen(!isOpen)}
-              className="sm:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+              className="sm:hidden inline-flex items-center justify-center p-2 rounded text-muted hover:text-foreground hover:bg-surface-alt"
               aria-expanded={isOpen}
             >
               <span className="sr-only">Abrir menu</span>
@@ -95,17 +101,17 @@ export default function DashboardNav() {
                 onClick={() => setIsOpen(false)}
                 className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
                   isActive(item.href)
-                    ? 'bg-indigo-50 border-indigo-500 text-indigo-700'
-                    : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+                    ? 'bg-surface-alt border-primary text-primary'
+                    : 'border-transparent text-muted hover:bg-surface-alt hover:border-border hover:text-foreground'
                 }`}
               >
                 {item.label}
               </Link>
             ))}
-            <form action={logout} className="border-t border-gray-200 pt-2">
+            <form action={logout} className="border-t border-border pt-2">
               <button
                 type="submit"
-                className="block w-full text-left pl-3 pr-4 py-3 border-l-4 border-transparent text-base font-medium text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700"
+                className="block w-full text-left pl-3 pr-4 py-3 border-l-4 border-transparent text-base font-medium text-muted hover:bg-surface-alt hover:border-border hover:text-foreground"
               >
                 Cerrar Sesion
               </button>

@@ -93,46 +93,46 @@ export default function PaymentProofUpload({
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
         <h3 className="text-lg font-medium mb-2">{planName}</h3>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-muted mb-4">
           CBU/IBAN: <span className="font-mono">{cbuIban}</span>
         </p>
       </div>
 
-      <div className="bg-gray-50 rounded-lg p-4">
-        <p className="text-sm text-gray-600">Total a pagar:</p>
-        <p className="text-2xl font-bold text-gray-900">
+      <div className="bg-background rounded p-4">
+        <p className="text-sm text-muted">Total a pagar:</p>
+        <p className="text-2xl font-bold text-foreground">
           ${planPrice.toFixed(2)}
         </p>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-muted mb-2">
           Comprobante de Pago *
         </label>
         <div
           {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer ${
+          className={`border-2 border-dashed rounded p-6 text-center cursor-pointer ${
             isDragActive
-              ? 'border-indigo-500 bg-indigo-50'
-              : 'border-gray-300 hover:border-gray-400'
+              ? 'border-primary bg-primary/10'
+              : 'border-border hover:border-muted'
           }`}
         >
           <input {...getInputProps()} />
           {file ? (
             <div>
-              <p className="text-sm text-gray-700">{file.name}</p>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-sm text-muted">{file.name}</p>
+              <p className="text-xs text-muted mt-1">
                 {(file.size / 1024 / 1024).toFixed(2)} MB
               </p>
             </div>
           ) : (
             <div>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted">
                 {isDragActive
                   ? 'Suelta el archivo aquí'
                   : 'Arrastra y suelta el archivo aquí, o haz clic para seleccionar'}
               </p>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted mt-1">
                 JPG, PNG o PDF (máximo 5MB)
               </p>
             </div>
@@ -141,7 +141,7 @@ export default function PaymentProofUpload({
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="bg-error/10 border border-error text-error px-4 py-3 rounded">
           {error}
         </div>
       )}
@@ -149,7 +149,7 @@ export default function PaymentProofUpload({
       <button
         type="submit"
         disabled={!file || uploading}
-        className="w-full px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full px-4 py-2 border border-transparent rounded shadow-sm text-sm font-medium text-white bg-primary hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {uploading ? 'Subiendo...' : 'Subir Comprobante'}
       </button>

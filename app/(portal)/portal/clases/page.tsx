@@ -23,8 +23,8 @@ const statusLabels: Record<string, string> = {
 
 const statusColors: Record<string, string> = {
   confirmed: 'bg-blue-100 text-blue-800',
-  completed: 'bg-green-100 text-green-800',
-  cancelled: 'bg-red-100 text-red-800',
+  completed: 'bg-success/10 text-success',
+  cancelled: 'bg-error/10 text-error',
 }
 
 export default async function ClasesPage() {
@@ -59,62 +59,62 @@ export default async function ClasesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Mis Clases</h1>
-          <p className="mt-1 text-gray-600">Proximas clases e historial de asistencias</p>
+          <h1 className="text-2xl font-bold text-foreground">Mis Clases</h1>
+          <p className="mt-1 text-muted">Proximas clases e historial de asistencias</p>
         </div>
         <CalendarButtons calendarToken={student.calendar_token} />
       </div>
 
       {/* Estadisticas */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-        <div className="bg-white shadow rounded-lg p-4">
-          <p className="text-sm text-gray-500">Total clases</p>
-          <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+        <div className="bg-surface shadow rounded p-4">
+          <p className="text-sm text-muted">Total clases</p>
+          <p className="text-2xl font-bold text-foreground">{stats.total}</p>
         </div>
 
-        <div className="bg-white shadow rounded-lg p-4">
-          <p className="text-sm text-gray-500">Asistencias</p>
-          <p className="text-2xl font-bold text-green-600">{stats.completed}</p>
+        <div className="bg-surface shadow rounded p-4">
+          <p className="text-sm text-muted">Asistencias</p>
+          <p className="text-2xl font-bold text-success">{stats.completed}</p>
         </div>
 
-        <div className="bg-white shadow rounded-lg p-4">
-          <p className="text-sm text-gray-500">Proximas</p>
+        <div className="bg-surface shadow rounded p-4">
+          <p className="text-sm text-muted">Proximas</p>
           <p className="text-2xl font-bold text-blue-600">{stats.upcoming}</p>
         </div>
 
-        <div className="bg-white shadow rounded-lg p-4">
-          <p className="text-sm text-gray-500">Canceladas</p>
-          <p className="text-2xl font-bold text-red-600">{stats.cancelled}</p>
+        <div className="bg-surface shadow rounded p-4">
+          <p className="text-sm text-muted">Canceladas</p>
+          <p className="text-2xl font-bold text-error">{stats.cancelled}</p>
         </div>
 
-        <div className="bg-white shadow rounded-lg p-4">
-          <p className="text-sm text-gray-500">Tolerancia este mes</p>
+        <div className="bg-surface shadow rounded p-4">
+          <p className="text-sm text-muted">Tolerancia este mes</p>
           <p className="text-2xl font-bold text-orange-600">
             {toleranceInfo.remaining}/{toleranceInfo.tolerance}
           </p>
-          <p className="text-xs text-gray-400">cancelaciones tardias</p>
+          <p className="text-xs text-muted">cancelaciones tardias</p>
         </div>
       </div>
 
       {/* Proximas clases */}
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">Proximas Clases</h2>
+      <div className="bg-surface shadow rounded">
+        <div className="px-6 py-4 border-b border-border">
+          <h2 className="text-lg font-medium text-foreground">Proximas Clases</h2>
         </div>
 
         {upcomingBookings.length === 0 ? (
           <div className="px-6 py-12 text-center">
-            <p className="text-gray-500">No tienes clases programadas</p>
+            <p className="text-muted">No tienes clases programadas</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-border">
             {upcomingBookings.map((booking) => (
               <div key={booking.id} className="px-6 py-4 flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-gray-900">
+                  <p className="font-medium text-foreground">
                     {formatDateTime(booking.class.scheduled_at)}
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted">
                     Duracion: {booking.class.duration_minutes} minutos
                   </p>
                 </div>
@@ -133,24 +133,24 @@ export default async function ClasesPage() {
       </div>
 
       {/* Historial */}
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">Historial de Asistencias</h2>
+      <div className="bg-surface shadow rounded">
+        <div className="px-6 py-4 border-b border-border">
+          <h2 className="text-lg font-medium text-foreground">Historial de Asistencias</h2>
         </div>
 
         {historyBookings.length === 0 ? (
           <div className="px-6 py-12 text-center">
-            <p className="text-gray-500">No hay historial de clases</p>
+            <p className="text-muted">No hay historial de clases</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-border">
             {historyBookings.map((booking) => (
               <div key={booking.id} className="px-6 py-4 flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-gray-900">
+                  <p className="font-medium text-foreground">
                     {formatDateTime(booking.class.scheduled_at)}
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted">
                     Duracion: {booking.class.duration_minutes} minutos
                   </p>
                 </div>

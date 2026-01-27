@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { createClient } from '@/app/lib/supabase/client'
 
 export default function LoginPage() {
@@ -10,7 +11,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
-  
+
   // Crear cliente de Supabase de forma segura
   const { supabase, configError } = useMemo(() => {
     try {
@@ -26,12 +27,12 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!supabase) {
       setError('Error de configuración: No se pudo inicializar el cliente de Supabase')
       return
     }
-    
+
     setLoading(true)
     setError(null)
 
@@ -66,15 +67,15 @@ export default function LoginPage() {
   // Si hay error de configuración, mostrar mensaje
   if (configError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="max-w-md w-full space-y-8 p-8 bg-surface rounded shadow-md">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-red-600 mb-4">
+            <h2 className="text-2xl font-bold text-error mb-4">
               Error de Configuración
             </h2>
-            <p className="text-gray-700 mb-4">{configError}</p>
-            <p className="text-sm text-gray-600">
-              Por favor, verifica que el archivo <code className="bg-gray-100 px-2 py-1 rounded">.env.local</code> existe y contiene las variables de entorno necesarias.
+            <p className="text-foreground mb-4">{configError}</p>
+            <p className="text-sm text-muted">
+              Por favor, verifica que el archivo <code className="bg-surface-alt px-2 py-1 rounded">.env.local</code> existe y contiene las variables de entorno necesarias.
             </p>
           </div>
         </div>
@@ -83,23 +84,30 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
-        <div>
-          <h2 className="text-center text-3xl font-extrabold text-gray-900">
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="max-w-md w-full space-y-8 p-8 bg-surface rounded shadow-md">
+        <div className="text-center">
+          <Image
+            src="/logo.png"
+            alt="Otakufiit"
+            width={80}
+            height={80}
+            className="mx-auto rounded"
+          />
+          <h2 className="mt-4 text-3xl font-extrabold text-foreground">
             Iniciar Sesión
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Personal Trainer Dashboard
+          <p className="mt-2 text-sm text-muted">
+            Otakufiit - Gestion de Clases
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            <div className="bg-error/10 border border-error/20 text-error px-4 py-3 rounded">
               {error}
             </div>
           )}
-          <div className="rounded-md shadow-sm -space-y-px">
+          <div className="rounded shadow-sm -space-y-px">
             <div>
               <label htmlFor="email" className="sr-only">
                 Email
@@ -110,7 +118,7 @@ export default function LoginPage() {
                 type="email"
                 autoComplete="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 text-base"
+                className="appearance-none rounded-none relative block w-full px-3 py-3 border border-border placeholder-muted text-background rounded-t focus:outline-none focus:ring-primary focus:border-primary focus:z-10 text-base"
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -126,7 +134,7 @@ export default function LoginPage() {
                 type="password"
                 autoComplete="current-password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 text-base"
+                className="appearance-none rounded-none relative block w-full px-3 py-3 border border-border placeholder-muted text-background rounded-b focus:outline-none focus:ring-primary focus:border-primary focus:z-10 text-base"
                 placeholder="Contraseña"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -138,7 +146,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-base font-medium rounded text-background bg-primary hover:bg-accent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
             </button>
@@ -148,4 +156,3 @@ export default function LoginPage() {
     </div>
   )
 }
-

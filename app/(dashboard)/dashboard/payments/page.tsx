@@ -1,14 +1,10 @@
-import Link from 'next/link'
 import { getPaymentProofs, updatePaymentProofStatus } from '@/app/actions/payments'
-import { getPlans } from '@/app/actions/plans'
 import { getStudents } from '@/app/actions/students'
 
 export default async function PaymentsPage() {
   const payments = await getPaymentProofs('pending')
-  const plans = await getPlans()
   const students = await getStudents()
 
-  const plansMap = new Map(plans.map(p => [p.id, p]))
   const studentsMap = new Map(students.map(s => [s.id, s]))
 
   async function handleApprove(id: string) {
@@ -24,17 +20,16 @@ export default async function PaymentsPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Comprobantes Pendientes</h1>
+      <h1 className="text-3xl font-bold text-foreground mb-6">Comprobantes Pendientes</h1>
 
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        <ul className="divide-y divide-gray-200">
+      <div className="bg-surface shadow overflow-hidden rounded">
+        <ul className="divide-y divide-border">
           {payments.length === 0 ? (
-            <li className="px-6 py-4 text-center text-gray-500">
+            <li className="px-6 py-4 text-center text-muted">
               No hay comprobantes pendientes
             </li>
           ) : (
             payments.map((payment) => {
-              const plan = payment.plan_id ? plansMap.get(payment.plan_id) : null
               const student = studentsMap.get(payment.student_id)
 
               return (
@@ -43,23 +38,23 @@ export default async function PaymentsPage() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center">
-                          <h3 className="text-lg font-medium text-gray-900">
+                          <h3 className="text-lg font-medium text-foreground">
                             {student?.name || 'Alumno desconocido'}
                           </h3>
                         </div>
-                        <p className="mt-1 text-sm text-gray-500">
+                        <p className="mt-1 text-sm text-muted">
                           Email: {student?.email}
                         </p>
-                        <p className="mt-1 text-sm text-gray-700">
-                          Plan: {plan?.name || payment.plan_name || 'Plan eliminado'}
+                        <p className="mt-1 text-sm text-foreground">
+                          Plan: {payment.plan_name || 'Sin plan'}
                         </p>
                         <div className="mt-2 flex items-baseline space-x-4">
                           {payment.discount_applied > 0 && (
-                            <span className="text-sm text-gray-500 line-through">
+                            <span className="text-sm text-muted line-through">
                               ${payment.original_price.toFixed(2)}
                             </span>
                           )}
-                          <span className="text-xl font-bold text-green-600">
+                          <span className="text-xl font-bold text-success">
                             ${payment.final_price.toFixed(2)}
                           </span>
                         </div>
@@ -75,7 +70,7 @@ export default async function PaymentsPage() {
                                 href={`/api/payment-proof/view?path=${encodeURIComponent(fileName)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-indigo-600 hover:text-indigo-900 text-sm"
+                                className="text-primary hover:text-accent text-sm"
                               >
                                 Ver comprobante →
                               </a>
@@ -87,7 +82,7 @@ export default async function PaymentsPage() {
                         <form action={handleApprove.bind(null, payment.id)}>
                           <button
                             type="submit"
-                            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
+                            className="px-4 py-2 bg-success text-background rounded hover:bg-success/80 text-sm"
                           >
                             Aprobar
                           </button>
@@ -95,7 +90,7 @@ export default async function PaymentsPage() {
                         <form action={handleReject.bind(null, payment.id)}>
                           <button
                             type="submit"
-                            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm"
+                            className="px-4 py-2 bg-error text-white rounded hover:bg-error/80 text-sm"
                           >
                             Rechazar
                           </button>

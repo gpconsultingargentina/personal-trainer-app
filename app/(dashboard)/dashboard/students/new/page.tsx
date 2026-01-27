@@ -11,8 +11,8 @@ export default async function NewStudentPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Nuevo Alumno</h1>
-      <div className="bg-white shadow rounded-lg p-6">
+      <h1 className="text-3xl font-bold text-foreground mb-6">Nuevo Alumno</h1>
+      <div className="bg-surface shadow rounded p-6">
         <StudentForm frequencies={frequencies} />
       </div>
     </div>

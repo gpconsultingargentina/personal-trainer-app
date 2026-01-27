@@ -37,7 +37,7 @@ export default function DeleteButton({
       type="button"
       onClick={handleClick}
       disabled={isPending}
-      className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
+      className="text-error hover:text-error/80 disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {isPending ? 'Eliminando...' : label}
     </button>

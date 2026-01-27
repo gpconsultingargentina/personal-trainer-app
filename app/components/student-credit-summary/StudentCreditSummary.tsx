@@ -71,26 +71,26 @@ export default function StudentCreditSummary({
   const getTransactionColor = (type: CreditTransaction['transaction_type']) => {
     switch (type) {
       case 'purchase':
-        return 'text-green-600'
+        return 'text-success'
       case 'attendance':
-        return 'text-blue-600'
+        return 'text-primary'
       case 'adjustment':
-        return 'text-yellow-600'
+        return 'text-primary'
       case 'expiration':
-        return 'text-red-600'
+        return 'text-error'
       default:
-        return 'text-gray-600'
+        return 'text-muted'
     }
   }
 
   return (
-    <div className="bg-white shadow rounded-lg p-6">
+    <div className="bg-surface shadow rounded p-6">
       <div className="flex justify-between items-start mb-4">
         <h2 className="text-xl font-semibold">Saldo de Creditos</h2>
         {onAdjustCredits && (
           <button
             onClick={() => setShowAdjustModal(true)}
-            className="text-sm px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded"
+            className="text-sm px-3 py-1 bg-background hover:bg-surface-alt rounded"
           >
             Ajustar
           </button>
@@ -98,24 +98,24 @@ export default function StudentCreditSummary({
       </div>
 
       <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="bg-indigo-50 rounded-lg p-4 text-center">
-          <p className="text-3xl font-bold text-indigo-600">
+        <div className="bg-primary/10 rounded p-4 text-center">
+          <p className="text-3xl font-bold text-primary">
             {summary.available}
           </p>
-          <p className="text-sm text-gray-600">Creditos Disponibles</p>
+          <p className="text-sm text-muted">Creditos Disponibles</p>
         </div>
 
-        <div className="bg-gray-50 rounded-lg p-4 text-center">
-          <p className="text-xl font-semibold text-gray-700">
+        <div className="bg-background rounded p-4 text-center">
+          <p className="text-xl font-semibold text-muted">
             {summary.totalUsed} / {summary.totalPurchased}
           </p>
-          <p className="text-sm text-gray-600">Usados / Comprados</p>
+          <p className="text-sm text-muted">Usados / Comprados</p>
         </div>
       </div>
 
       {summary.expiringSoon > 0 && summary.nextExpirationDate && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
-          <p className="text-sm text-yellow-800">
+        <div className="bg-primary/10 border border-primary rounded p-3 mb-4">
+          <p className="text-sm text-primary">
             <span className="font-semibold">{summary.expiringSoon}</span>{' '}
             {summary.expiringSoon === 1 ? 'credito vence' : 'creditos vencen'}{' '}
             antes del {formatDate(summary.nextExpirationDate)}
@@ -124,47 +124,47 @@ export default function StudentCreditSummary({
       )}
 
       {summary.nextExpirationDate && (
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-muted mb-4">
           Proximo vencimiento: {formatDate(summary.nextExpirationDate)}
         </p>
       )}
 
       <button
         onClick={() => setShowTransactions(!showTransactions)}
-        className="text-sm text-indigo-600 hover:text-indigo-800"
+        className="text-sm text-primary hover:text-accent"
       >
         {showTransactions ? 'Ocultar historial' : 'Ver historial de movimientos'}
       </button>
 
       {showTransactions && transactions.length > 0 && (
         <div className="mt-4 border-t pt-4">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">
+          <h3 className="text-sm font-medium text-muted mb-2">
             Ultimos Movimientos
           </h3>
           <ul className="space-y-2 max-h-60 overflow-y-auto">
             {transactions.map((tx) => (
               <li
                 key={tx.id}
-                className="flex justify-between items-center text-sm py-2 border-b border-gray-100"
+                className="flex justify-between items-center text-sm py-2 border-b border-border"
               >
                 <div className="flex items-center space-x-2">
                   <span
                     className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${getTransactionColor(
                       tx.transaction_type
-                    )} bg-gray-100`}
+                    )} bg-background`}
                   >
                     {getTransactionIcon(tx.transaction_type)}
                   </span>
                   <div>
-                    <p className="text-gray-700">{tx.notes || tx.transaction_type}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-muted">{tx.notes || tx.transaction_type}</p>
+                    <p className="text-xs text-muted">
                       {formatDateTime(tx.created_at)}
                     </p>
                   </div>
                 </div>
                 <span
                   className={`font-medium ${
-                    tx.amount > 0 ? 'text-green-600' : 'text-red-600'
+                    tx.amount > 0 ? 'text-success' : 'text-error'
                   }`}
                 >
                   {tx.amount > 0 ? '+' : ''}
@@ -178,31 +178,31 @@ export default function StudentCreditSummary({
 
       {showAdjustModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-surface rounded p-6 w-full max-w-md">
             <h3 className="text-lg font-semibold mb-4">Ajustar Creditos</h3>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-muted mb-1">
                   Cantidad (positivo para agregar, negativo para quitar)
                 </label>
                 <input
                   type="number"
                   value={adjustAmount}
                   onChange={(e) => setAdjustAmount(parseInt(e.target.value) || 0)}
-                  className="w-full border rounded-md px-3 py-2"
+                  className="w-full border border-border rounded px-3 py-2"
                   placeholder="Ej: 5 o -2"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-muted mb-1">
                   Motivo del ajuste
                 </label>
                 <textarea
                   value={adjustNotes}
                   onChange={(e) => setAdjustNotes(e.target.value)}
-                  className="w-full border rounded-md px-3 py-2"
+                  className="w-full border border-border rounded px-3 py-2"
                   rows={2}
                   placeholder="Ej: Compensacion por clase cancelada"
                 />
@@ -216,14 +216,14 @@ export default function StudentCreditSummary({
                   setAdjustAmount(0)
                   setAdjustNotes('')
                 }}
-                className="px-4 py-2 border rounded-md hover:bg-gray-50"
+                className="px-4 py-2 border rounded hover:bg-surface-alt"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleAdjust}
                 disabled={adjusting || adjustAmount === 0}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50"
+                className="px-4 py-2 bg-primary text-white rounded hover:bg-accent disabled:opacity-50"
               >
                 {adjusting ? 'Guardando...' : 'Confirmar'}
               </button>

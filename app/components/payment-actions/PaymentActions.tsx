@@ -50,14 +50,14 @@ export default function PaymentActions({ paymentId, studentName }: PaymentAction
       <button
         onClick={handleApprove}
         disabled={loading !== null}
-        className="px-4 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        className="px-4 py-3 bg-success text-white rounded hover:bg-success/80 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading === 'approve' ? 'Aprobando...' : 'Aprobar'}
       </button>
       <button
         onClick={handleReject}
         disabled={loading !== null}
-        className="px-4 py-3 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        className="px-4 py-3 bg-error text-white rounded hover:bg-error/80 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading === 'reject' ? 'Rechazando...' : 'Rechazar'}
       </button>

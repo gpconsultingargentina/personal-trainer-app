@@ -60,17 +60,17 @@ export default function TimeInput({ value, onChange, required, className }: Time
         value={hours}
         onChange={handleHoursChange}
         required={required}
-        className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+        className="rounded border-border shadow-sm focus:border-primary focus:ring-primary text-sm"
         style={{ fontFamily: 'monospace' }}
       >
         {hourOptions}
       </select>
-      <span className="text-gray-600 font-bold">:</span>
+      <span className="text-muted font-bold">:</span>
       <select
         value={minutes}
         onChange={handleMinutesChange}
         required={required}
-        className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+        className="rounded border-border shadow-sm focus:border-primary focus:ring-primary text-sm"
         style={{ fontFamily: 'monospace' }}
       >
         {minuteOptions}

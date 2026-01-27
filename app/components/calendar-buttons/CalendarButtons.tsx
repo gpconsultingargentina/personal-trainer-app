@@ -53,7 +53,7 @@ export default function CalendarButtons({ calendarToken }: Props) {
       <button
         type="button"
         onClick={handleDownload}
-        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+        className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded hover:bg-accent transition-colors"
       >
         <svg
           className="w-4 h-4"
@@ -76,7 +76,7 @@ export default function CalendarButtons({ calendarToken }: Props) {
           <button
             type="button"
             onClick={handleOpenSubscription}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-success text-white text-sm font-medium rounded hover:bg-success/80 transition-colors"
           >
             <svg
               className="w-4 h-4"
@@ -97,7 +97,7 @@ export default function CalendarButtons({ calendarToken }: Props) {
           <button
             type="button"
             onClick={handleSubscribe}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-800 text-sm font-medium rounded-lg hover:bg-gray-300 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-background text-foreground text-sm font-medium rounded hover:bg-surface-alt transition-colors"
           >
             <svg
               className="w-4 h-4"

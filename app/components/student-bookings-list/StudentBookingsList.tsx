@@ -87,23 +87,23 @@ export default function StudentBookingsList({ bookings }: StudentBookingsListPro
   }
 
   if (bookings.length === 0) {
-    return <p className="text-gray-500">No hay clases reservadas</p>
+    return <p className="text-muted">No hay clases reservadas</p>
   }
 
   return (
     <div>
       {/* Barra de acciones con selección masiva */}
       {programadasBookings.length > 0 && (
-        <div className="mb-4 flex items-center justify-between p-3 bg-gray-50 rounded-md">
+        <div className="mb-4 flex items-center justify-between p-3 bg-background rounded">
           <label className="flex items-center cursor-pointer">
             <input
               type="checkbox"
               ref={selectAllRef}
               checked={allSelected}
               onChange={toggleSelectAll}
-              className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+              className="rounded border-border text-primary focus:ring-primary"
             />
-            <span className="ml-2 text-sm font-medium text-gray-700">
+            <span className="ml-2 text-sm font-medium text-muted">
               Seleccionar todas ({programadasBookings.length})
             </span>
           </label>
@@ -111,7 +111,7 @@ export default function StudentBookingsList({ bookings }: StudentBookingsListPro
             <button
               onClick={handleDeleteSelected}
               disabled={isPending}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              className="px-4 py-2 bg-error text-white rounded hover:bg-error/80 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
               {isPending ? 'Eliminando...' : `Eliminar ${selectedIds.size} seleccionada(s)`}
             </button>
@@ -119,7 +119,7 @@ export default function StudentBookingsList({ bookings }: StudentBookingsListPro
         </div>
       )}
 
-      <ul className="divide-y divide-gray-200">
+      <ul className="divide-y divide-border">
         {bookings.map((booking) => {
           // Determinar el estado: priorizar class.status sobre booking.status
           const classStatus = booking.classes?.status
@@ -160,22 +160,22 @@ export default function StudentBookingsList({ bookings }: StudentBookingsListPro
                     type="checkbox"
                     checked={isSelected}
                     onChange={() => toggleSelect(booking.id)}
-                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    className="rounded border-border text-primary focus:ring-primary"
                   />
                 )}
                 <div className="flex-1 flex justify-between items-center">
                   <div className="flex-1">
                     <div className="flex items-center">
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-sm font-medium text-foreground">
                         {formatDateTime24h(booking.classes.scheduled_at)}
                       </p>
                       <span
                         className={`ml-2 px-2 py-1 text-xs font-medium rounded-full ${
                           displayStatus === 'scheduled'
-                            ? 'bg-green-100 text-green-800'
+                            ? 'bg-success/10 text-success'
                             : displayStatus === 'completed'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-red-100 text-red-800'
+                            ? 'bg-primary/10 text-primary'
+                            : 'bg-error/10 text-error'
                         }`}
                       >
                         {displayStatusText}
@@ -186,7 +186,7 @@ export default function StudentBookingsList({ bookings }: StudentBookingsListPro
                     <div className="ml-4 flex space-x-2">
                       <Link
                         href={`/dashboard/classes/${booking.classes.id}`}
-                        className="text-indigo-600 hover:text-indigo-900"
+                        className="text-primary hover:text-accent"
                       >
                         Editar
                       </Link>

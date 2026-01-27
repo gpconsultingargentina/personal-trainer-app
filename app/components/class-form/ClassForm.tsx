@@ -57,7 +57,7 @@ export default function ClassForm({ classData }: ClassFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="bg-error/10 border border-error text-error px-4 py-3 rounded">
           {error}
         </div>
       )}
@@ -66,7 +66,7 @@ export default function ClassForm({ classData }: ClassFormProps) {
         <div>
           <label
             htmlFor="date"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-muted"
           >
             Fecha *
           </label>
@@ -76,13 +76,13 @@ export default function ClassForm({ classData }: ClassFormProps) {
             required
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            className="mt-1 block w-full rounded border-border shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
           />
         </div>
         <div>
           <label
             htmlFor="time"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-muted"
           >
             Hora (24h) *
           </label>
@@ -103,7 +103,7 @@ export default function ClassForm({ classData }: ClassFormProps) {
         <div>
           <label
             htmlFor="duration_minutes"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-muted"
           >
             Duración (minutos) *
           </label>
@@ -115,14 +115,14 @@ export default function ClassForm({ classData }: ClassFormProps) {
             step="15"
             required
             defaultValue={classData?.duration_minutes || 60}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            className="mt-1 block w-full rounded border-border shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
           />
         </div>
 
         <div>
           <label
             htmlFor="max_capacity"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-muted"
           >
             Capacidad Máxima *
           </label>
@@ -133,7 +133,7 @@ export default function ClassForm({ classData }: ClassFormProps) {
             min="1"
             required
             defaultValue={classData?.max_capacity || 1}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            className="mt-1 block w-full rounded border-border shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
           />
         </div>
       </div>
@@ -142,7 +142,7 @@ export default function ClassForm({ classData }: ClassFormProps) {
         <div>
           <label
             htmlFor="status"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-muted"
           >
             Estado *
           </label>
@@ -151,7 +151,7 @@ export default function ClassForm({ classData }: ClassFormProps) {
             name="status"
             required
             defaultValue={classData.status}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            className="mt-1 block w-full rounded border-border shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
           >
             <option value="scheduled">Programada</option>
             <option value="completed">Completada</option>
@@ -163,7 +163,7 @@ export default function ClassForm({ classData }: ClassFormProps) {
       <div>
         <label
           htmlFor="description"
-          className="block text-sm font-medium text-gray-700"
+          className="block text-sm font-medium text-muted"
         >
           Descripción
         </label>
@@ -172,7 +172,7 @@ export default function ClassForm({ classData }: ClassFormProps) {
           name="description"
           rows={4}
           defaultValue={classData?.description || ''}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          className="mt-1 block w-full rounded border-border shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
         />
       </div>
 
@@ -180,14 +180,14 @@ export default function ClassForm({ classData }: ClassFormProps) {
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+          className="px-4 py-3 border border-border rounded shadow-sm text-sm font-medium text-muted bg-surface hover:bg-surface-alt"
         >
           Cancelar
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+          className="px-4 py-3 border border-transparent rounded shadow-sm text-sm font-medium text-white bg-primary hover:bg-accent disabled:opacity-50"
         >
           {loading ? 'Guardando...' : classData ? 'Actualizar' : 'Crear'}
         </button>

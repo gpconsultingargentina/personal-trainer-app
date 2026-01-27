@@ -40,43 +40,43 @@ export default async function PortalPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-foreground">
           Hola, {student.name.split(' ')[0]}!
         </h1>
-        <p className="mt-1 text-gray-600">
+        <p className="mt-1 text-muted">
           Bienvenido/a a tu portal de entrenamiento
         </p>
       </div>
 
       {/* Resumen de creditos */}
-      <div className="bg-white shadow rounded-lg p-6">
+      <div className="bg-surface shadow rounded p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-medium text-gray-900">Mis Creditos</h2>
+          <h2 className="text-lg font-medium text-foreground">Mis Creditos</h2>
           <Link
             href="/portal/creditos"
-            className="text-sm text-indigo-600 hover:text-indigo-500"
+            className="text-sm text-primary hover:text-accent"
           >
             Ver detalles
           </Link>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-indigo-50 rounded-lg p-4">
-            <p className="text-sm text-indigo-600 font-medium">Disponibles</p>
-            <p className="text-3xl font-bold text-indigo-900">{credits.available}</p>
+          <div className="bg-primary/10 rounded p-4">
+            <p className="text-sm text-primary font-medium">Disponibles</p>
+            <p className="text-3xl font-bold text-primary">{credits.available}</p>
           </div>
 
           {credits.expiringSoon > 0 && (
-            <div className="bg-yellow-50 rounded-lg p-4">
+            <div className="bg-yellow-50 rounded p-4">
               <p className="text-sm text-yellow-600 font-medium">Por vencer (7 dias)</p>
               <p className="text-3xl font-bold text-yellow-900">{credits.expiringSoon}</p>
             </div>
           )}
 
           {credits.nextExpirationDate && (
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 font-medium">Proximo vencimiento</p>
-              <p className="text-lg font-semibold text-gray-900">
+            <div className="bg-background rounded p-4">
+              <p className="text-sm text-muted font-medium">Proximo vencimiento</p>
+              <p className="text-lg font-semibold text-foreground">
                 {formatShortDate(credits.nextExpirationDate)}
               </p>
             </div>
@@ -84,8 +84,8 @@ export default async function PortalPage() {
         </div>
 
         {credits.available === 0 && (
-          <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-red-800">
+          <div className="mt-4 bg-error/10 border border-error/20 rounded p-4">
+            <p className="text-error">
               No tienes creditos disponibles.{' '}
               <Link href="/portal/pagos" className="font-medium underline">
                 Cargar creditos
@@ -96,19 +96,19 @@ export default async function PortalPage() {
       </div>
 
       {/* Proximas clases */}
-      <div className="bg-white shadow rounded-lg p-6">
+      <div className="bg-surface shadow rounded p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-medium text-gray-900">Proximas Clases</h2>
+          <h2 className="text-lg font-medium text-foreground">Proximas Clases</h2>
           <Link
             href="/portal/clases"
-            className="text-sm text-indigo-600 hover:text-indigo-500"
+            className="text-sm text-primary hover:text-accent"
           >
             Ver todas
           </Link>
         </div>
 
         {upcomingClasses.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">
+          <p className="text-muted text-center py-8">
             No tienes clases programadas
           </p>
         ) : (
@@ -116,15 +116,15 @@ export default async function PortalPage() {
             {upcomingClasses.map((classItem) => (
               <div
                 key={classItem.id}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                className="flex items-center justify-between p-4 bg-background rounded"
               >
                 <div>
-                  <p className="font-medium text-gray-900">
+                  <p className="font-medium text-foreground">
                     {formatDate(classItem.scheduled_at)}
                   </p>
-                  <p className="text-sm text-gray-500">Clase confirmada</p>
+                  <p className="text-sm text-muted">Clase confirmada</p>
                 </div>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success/10 text-success">
                   Confirmada
                 </span>
               </div>
@@ -137,22 +137,22 @@ export default async function PortalPage() {
       <div className="grid grid-cols-2 gap-4">
         <Link
           href="/portal/pagos"
-          className="bg-white shadow rounded-lg p-6 hover:shadow-md transition-shadow"
+          className="bg-surface shadow rounded p-6 hover:shadow-md transition-shadow"
         >
           <div className="text-center">
-            <div className="mx-auto h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
-              <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="mx-auto h-12 w-12 rounded-full bg-success/10 flex items-center justify-center">
+              <svg className="h-6 w-6 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <p className="mt-2 font-medium text-gray-900">Cargar Creditos</p>
-            <p className="text-sm text-gray-500">Subir comprobante</p>
+            <p className="mt-2 font-medium text-foreground">Cargar Creditos</p>
+            <p className="text-sm text-muted">Subir comprobante</p>
           </div>
         </Link>
 
         <Link
           href="/portal/clases"
-          className="bg-white shadow rounded-lg p-6 hover:shadow-md transition-shadow"
+          className="bg-surface shadow rounded p-6 hover:shadow-md transition-shadow"
         >
           <div className="text-center">
             <div className="mx-auto h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
@@ -160,8 +160,8 @@ export default async function PortalPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
-            <p className="mt-2 font-medium text-gray-900">Mis Clases</p>
-            <p className="text-sm text-gray-500">Ver historial</p>
+            <p className="mt-2 font-medium text-foreground">Mis Clases</p>
+            <p className="text-sm text-muted">Ver historial</p>
           </div>
         </Link>
       </div>
