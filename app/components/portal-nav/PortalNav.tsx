@@ -63,6 +63,11 @@ export default function PortalNav({ studentName }: PortalNavProps) {
           </div>
 
           <div className="flex items-center">
+            {/* Desktop install */}
+            <div className="hidden sm:block">
+              <InstallPWA variant="desktop" />
+            </div>
+
             {/* User name */}
             <span className="hidden sm:block text-sm text-muted mr-4">
               {studentName}
