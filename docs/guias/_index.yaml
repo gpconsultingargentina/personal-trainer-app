@@ -1,7 +1,10 @@
 guias:
   - id: "documentacion"
     archivo: "documentacion.md"
-    titulo: "Reglas de Documentación"
+    titulo: "Reglas de Documentacion"
   - id: "modelo-negocio"
     archivo: "modelo-negocio.md"
     titulo: "Modelo de Negocio - Conceptual"
+  - id: "sistema-creditos"
+    archivo: "sistema-creditos.md"
+    titulo: "Sistema de Creditos Flexibles"

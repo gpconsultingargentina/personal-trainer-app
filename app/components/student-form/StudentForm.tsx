@@ -3,15 +3,20 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createStudent, type Student } from '@/app/actions/students'
+import type { FrequencyPrice } from '@/app/actions/frequencies'
 
 interface StudentFormProps {
   student?: Student | null
+  frequencies?: FrequencyPrice[]
 }
 
-export default function StudentForm({ student }: StudentFormProps) {
+export default function StudentForm({ student, frequencies = [] }: StudentFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [frequencyId, setFrequencyId] = useState<string>(student?.frequency_id || '')
+
+  const selectedFrequency = frequencies.find((f) => f.id === frequencyId)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -20,6 +25,9 @@ export default function StudentForm({ student }: StudentFormProps) {
 
     try {
       const formData = new FormData(e.currentTarget)
+      if (frequencyId) {
+        formData.set('frequency_id', frequencyId)
+      }
       await createStudent(formData)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al guardar el alumno')
@@ -87,6 +95,36 @@ export default function StudentForm({ student }: StudentFormProps) {
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base py-2"
         />
       </div>
+
+      {frequencies.length > 0 && (
+        <div>
+          <label
+            htmlFor="frequency_id"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Frecuencia Habitual
+          </label>
+          <select
+            id="frequency_id"
+            name="frequency_id"
+            value={frequencyId}
+            onChange={(e) => setFrequencyId(e.target.value)}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          >
+            <option value="">Sin frecuencia asignada</option>
+            {frequencies.map((freq) => (
+              <option key={freq.id} value={freq.id}>
+                {freq.description} - ${freq.price_per_class.toLocaleString('es-AR')}/clase
+              </option>
+            ))}
+          </select>
+          {selectedFrequency && (
+            <p className="mt-1 text-sm text-gray-500">
+              Precio por clase: ${selectedFrequency.price_per_class.toLocaleString('es-AR')}
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="flex justify-end space-x-3">
         <button

@@ -4,12 +4,34 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- Tabla de usuarios (usando auth.users de Supabase, pero agregando campos adicionales si es necesario)
 -- La tabla auth.users ya existe en Supabase, solo necesitamos crear perfiles si es necesario
 
+-- Tabla de precios por frecuencia
+CREATE TABLE IF NOT EXISTS frequency_prices (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  frequency_code VARCHAR(20) NOT NULL UNIQUE, -- '1x', '2x', '3x'
+  classes_per_week INTEGER NOT NULL,
+  price_per_class DECIMAL(10, 2) NOT NULL,
+  description VARCHAR(255),
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Datos iniciales de frecuencias
+INSERT INTO frequency_prices (frequency_code, classes_per_week, price_per_class, description) VALUES
+  ('1x', 1, 30250.00, '1 clase por semana'),
+  ('2x', 2, 27500.00, '2 clases por semana'),
+  ('3x', 3, 25850.00, '3 clases por semana')
+ON CONFLICT (frequency_code) DO NOTHING;
+
 -- Tabla de estudiantes
 CREATE TABLE IF NOT EXISTS students (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  auth_user_id UUID REFERENCES auth.users(id), -- Vinculación con auth (nullable para legacy)
   name VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL,
   phone VARCHAR(50),
+  frequency_id UUID REFERENCES frequency_prices(id),
+  usual_schedule JSONB DEFAULT '[]',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -78,7 +100,7 @@ CREATE TABLE IF NOT EXISTS bookings (
 CREATE TABLE IF NOT EXISTS payment_proofs (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
-  plan_id UUID NOT NULL REFERENCES class_plans(id),
+  plan_id UUID REFERENCES class_plans(id), -- Ahora opcional, para backwards compatibility
   coupon_id UUID REFERENCES coupons(id),
   original_price DECIMAL(10, 2) NOT NULL,
   final_price DECIMAL(10, 2) NOT NULL,
@@ -88,8 +110,41 @@ CREATE TABLE IF NOT EXISTS payment_proofs (
   rejection_reason TEXT,
   submitted_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   reviewed_at TIMESTAMP WITH TIME ZONE,
+  -- Nuevos campos para sistema de créditos
+  classes_purchased INTEGER,
+  price_per_class DECIMAL(10, 2),
+  frequency_code VARCHAR(20),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Tabla de balances de créditos
+CREATE TABLE IF NOT EXISTS credit_balances (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  payment_proof_id UUID REFERENCES payment_proofs(id) ON DELETE SET NULL,
+  classes_purchased INTEGER NOT NULL,
+  classes_remaining INTEGER NOT NULL,
+  price_per_class DECIMAL(10, 2) NOT NULL,
+  frequency_code VARCHAR(20) NOT NULL,
+  purchased_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  expires_at TIMESTAMP WITH TIME ZONE NOT NULL, -- 60 días desde purchased_at
+  status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'depleted', 'expired')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Tabla de transacciones de créditos
+CREATE TABLE IF NOT EXISTS credit_transactions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  credit_balance_id UUID NOT NULL REFERENCES credit_balances(id) ON DELETE CASCADE,
+  student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  booking_id UUID REFERENCES bookings(id) ON DELETE SET NULL,
+  transaction_type VARCHAR(20) NOT NULL CHECK (transaction_type IN ('purchase', 'attendance', 'adjustment', 'expiration')),
+  amount INTEGER NOT NULL, -- +N compra, -1 asistencia, -N ajuste/expiración
+  balance_after INTEGER NOT NULL,
+  notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Tabla de uso de cupones (para analytics)
@@ -109,6 +164,16 @@ CREATE TABLE IF NOT EXISTS notifications_log (
   status VARCHAR(20) DEFAULT 'sent' CHECK (status IN ('sent', 'failed'))
 );
 
+-- Tabla de tokens de registro para alumnos
+CREATE TABLE IF NOT EXISTS registration_tokens (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  token VARCHAR(64) UNIQUE NOT NULL,
+  expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  used_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Índices para mejorar rendimiento
 CREATE INDEX IF NOT EXISTS idx_bookings_class_id ON bookings(class_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_student_id ON bookings(student_id);
@@ -119,6 +184,18 @@ CREATE INDEX IF NOT EXISTS idx_coupons_code ON coupons(code);
 CREATE INDEX IF NOT EXISTS idx_coupons_active ON coupons(is_active);
 CREATE INDEX IF NOT EXISTS idx_coupon_plans_coupon_id ON coupon_plans(coupon_id);
 CREATE INDEX IF NOT EXISTS idx_coupon_plans_plan_id ON coupon_plans(plan_id);
+-- Índices para sistema de créditos
+CREATE INDEX IF NOT EXISTS idx_students_frequency_id ON students(frequency_id);
+CREATE INDEX IF NOT EXISTS idx_credit_balances_student_id ON credit_balances(student_id);
+CREATE INDEX IF NOT EXISTS idx_credit_balances_status ON credit_balances(status);
+CREATE INDEX IF NOT EXISTS idx_credit_balances_expires_at ON credit_balances(expires_at);
+CREATE INDEX IF NOT EXISTS idx_credit_transactions_student_id ON credit_transactions(student_id);
+CREATE INDEX IF NOT EXISTS idx_credit_transactions_credit_balance_id ON credit_transactions(credit_balance_id);
+-- Índices para auth de alumnos
+CREATE UNIQUE INDEX IF NOT EXISTS idx_students_auth_user ON students(auth_user_id) WHERE auth_user_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_registration_tokens_token ON registration_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_registration_tokens_student_id ON registration_tokens(student_id);
+CREATE INDEX IF NOT EXISTS idx_registration_tokens_expires_at ON registration_tokens(expires_at);
 
 -- Trigger para actualizar updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -135,6 +212,8 @@ CREATE TRIGGER update_coupons_updated_at BEFORE UPDATE ON coupons FOR EACH ROW E
 CREATE TRIGGER update_classes_updated_at BEFORE UPDATE ON classes FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_bookings_updated_at BEFORE UPDATE ON bookings FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_payment_proofs_updated_at BEFORE UPDATE ON payment_proofs FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_frequency_prices_updated_at BEFORE UPDATE ON frequency_prices FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_credit_balances_updated_at BEFORE UPDATE ON credit_balances FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Row Level Security (RLS) Policies
 ALTER TABLE students ENABLE ROW LEVEL SECURITY;
@@ -146,6 +225,10 @@ ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payment_proofs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE coupon_usage ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications_log ENABLE ROW LEVEL SECURITY;
+ALTER TABLE frequency_prices ENABLE ROW LEVEL SECURITY;
+ALTER TABLE credit_balances ENABLE ROW LEVEL SECURITY;
+ALTER TABLE credit_transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE registration_tokens ENABLE ROW LEVEL SECURITY;
 
 -- Políticas RLS básicas (ajustar según necesidades específicas)
 -- Políticas para estudiantes: solo el entrenador puede ver/editar
@@ -190,4 +273,62 @@ CREATE POLICY "Trainer can view coupon usage" ON coupon_usage FOR SELECT USING (
 -- Políticas para log de notificaciones
 CREATE POLICY "Trainer can view notifications log" ON notifications_log FOR SELECT USING (auth.role() = 'authenticated');
 CREATE POLICY "Service can insert notifications log" ON notifications_log FOR INSERT WITH CHECK (true);
+
+-- Políticas para frequency_prices: público puede ver activos, solo entrenador puede modificar
+CREATE POLICY "Anyone can view active frequencies" ON frequency_prices FOR SELECT USING (is_active = true);
+CREATE POLICY "Trainer can manage frequencies" ON frequency_prices FOR ALL USING (auth.role() = 'authenticated');
+
+-- Políticas para credit_balances: solo entrenador y service role
+CREATE POLICY "Trainer can view credit balances" ON credit_balances FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Service can manage credit balances" ON credit_balances FOR ALL USING (true);
+
+-- Políticas para credit_transactions: solo entrenador y service role
+CREATE POLICY "Trainer can view credit transactions" ON credit_transactions FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Service can manage credit transactions" ON credit_transactions FOR ALL USING (true);
+
+-- Políticas para registration_tokens
+CREATE POLICY "Trainer can manage registration tokens" ON registration_tokens FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Public can validate token" ON registration_tokens FOR SELECT USING (
+  token IS NOT NULL
+  AND used_at IS NULL
+  AND expires_at > NOW()
+);
+
+-- =====================================================
+-- Funciones helper para sistema de roles
+-- =====================================================
+-- NOTA: Ver migración 004_student_auth.sql para políticas RLS
+-- actualizadas que soportan roles trainer/student.
+-- =====================================================
+
+-- Función para obtener el rol del usuario actual
+CREATE OR REPLACE FUNCTION public.get_user_role()
+RETURNS TEXT AS $$
+BEGIN
+  RETURN COALESCE(
+    auth.jwt() -> 'user_metadata' ->> 'role',
+    'anonymous'
+  );
+END;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
+
+-- Función para verificar si es trainer
+CREATE OR REPLACE FUNCTION public.is_trainer()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN public.get_user_role() = 'trainer';
+END;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
+
+-- Función para obtener student_id del usuario actual
+CREATE OR REPLACE FUNCTION public.get_current_student_id()
+RETURNS UUID AS $$
+BEGIN
+  RETURN (
+    SELECT id FROM students
+    WHERE auth_user_id = auth.uid()
+    LIMIT 1
+  );
+END;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
 

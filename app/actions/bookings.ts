@@ -1,7 +1,8 @@
 'use server'
 
-import { createClient } from '@/app/lib/supabase/server'
+import { createClient, createServiceClient } from '@/app/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { deductCredit } from './credits'
 
 export type Booking = {
   id: string
@@ -58,7 +59,6 @@ export async function createBooking(classId: string, studentId: string) {
     column_name: 'current_bookings',
   })
 
-  revalidatePath('/public/book')
   revalidatePath('/dashboard/students')
   return { success: true }
 }
@@ -102,7 +102,7 @@ export async function cancelBooking(bookingId: string) {
   }
 
   revalidatePath('/dashboard/students')
-  revalidatePath('/public/book')
+  // revalidatePath removed - public pages deprecated
   return { success: true }
 }
 
@@ -139,7 +139,7 @@ export async function deleteBooking(bookingId: string) {
   // Revalidar todas las rutas relacionadas
   revalidatePath('/dashboard/students')
   revalidatePath('/dashboard/classes')
-  revalidatePath('/public/book')
+  // revalidatePath removed - public pages deprecated
   
   return { success: true }
 }
@@ -204,7 +204,7 @@ export async function deleteMultipleBookings(bookingIds: string[]) {
 
   revalidatePath('/dashboard/students')
   revalidatePath('/dashboard/classes')
-  revalidatePath('/public/book')
+  // revalidatePath removed - public pages deprecated
   return { success: true, deletedCount: bookings.length }
 }
 
@@ -377,10 +377,249 @@ export async function createRecurringBookings(data: {
 
   revalidatePath('/dashboard/students')
   revalidatePath('/dashboard/classes')
-  return { 
-    success: true, 
+  return {
+    success: true,
     classesCreated: createdClasses.length,
-    bookingsCreated: bookingsToCreate.length 
+    bookingsCreated: bookingsToCreate.length
+  }
+}
+
+export async function markAttendance(bookingId: string): Promise<{
+  success: boolean
+  remainingCredits?: number
+  error?: string
+}> {
+  const supabase = await createClient()
+
+  // Obtener la reserva
+  const { data: booking, error: fetchError } = await supabase
+    .from('bookings')
+    .select('*, classes(*)')
+    .eq('id', bookingId)
+    .single()
+
+  if (fetchError || !booking) {
+    return { success: false, error: 'Reserva no encontrada' }
+  }
+
+  if (booking.status === 'completed') {
+    return { success: false, error: 'La asistencia ya fue marcada' }
+  }
+
+  if (booking.status === 'cancelled') {
+    return { success: false, error: 'La reserva está cancelada' }
+  }
+
+  // Marcar la reserva como completada
+  const { error: updateError } = await supabase
+    .from('bookings')
+    .update({ status: 'completed' })
+    .eq('id', bookingId)
+
+  if (updateError) {
+    return { success: false, error: updateError.message }
+  }
+
+  // Descontar crédito
+  try {
+    const result = await deductCredit(booking.student_id, bookingId)
+    revalidatePath('/dashboard/classes')
+    revalidatePath('/dashboard/students')
+    return { success: true, remainingCredits: result.remainingCredits }
+  } catch (error) {
+    // Si falla el descuento de crédito, revertir el estado
+    await supabase
+      .from('bookings')
+      .update({ status: 'confirmed' })
+      .eq('id', bookingId)
+
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error al descontar crédito',
+    }
+  }
+}
+
+export async function getBookingsWithStudentCredits(classId: string): Promise<
+  Array<{
+    id: string
+    student_id: string
+    status: string
+    student: {
+      id: string
+      name: string
+      email: string
+    }
+    credits_remaining: number
+  }>
+> {
+  const supabase = await createClient()
+  const serviceClient = await createServiceClient()
+
+  const { data: bookings, error } = await supabase
+    .from('bookings')
+    .select(`
+      id,
+      student_id,
+      status,
+      students(id, name, email)
+    `)
+    .eq('class_id', classId)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  // Obtener créditos para cada estudiante
+  const result = await Promise.all(
+    (bookings || []).map(async (booking) => {
+      const { data: credits } = await serviceClient
+        .from('credit_balances')
+        .select('classes_remaining')
+        .eq('student_id', booking.student_id)
+        .eq('status', 'active')
+
+      const creditsRemaining =
+        credits?.reduce((sum, c) => sum + c.classes_remaining, 0) || 0
+
+      return {
+        id: booking.id,
+        student_id: booking.student_id,
+        status: booking.status,
+        student: Array.isArray(booking.students)
+          ? booking.students[0]
+          : booking.students,
+        credits_remaining: creditsRemaining,
+      }
+    })
+  )
+
+  return result
+}
+
+export type BookingWithClass = Booking & {
+  class: {
+    id: string
+    scheduled_at: string
+    duration_minutes: number
+    status: string
+  }
+}
+
+/**
+ * Obtiene el historial de clases/reservas de un estudiante
+ * Para uso en el portal del alumno
+ */
+export async function getStudentBookings(
+  studentId: string,
+  options?: {
+    status?: 'confirmed' | 'cancelled' | 'completed'
+    upcoming?: boolean
+    limit?: number
+    offset?: number
+  }
+): Promise<BookingWithClass[]> {
+  const supabase = await createClient()
+
+  let query = supabase
+    .from('bookings')
+    .select(`
+      id,
+      class_id,
+      student_id,
+      status,
+      reminder_24h_sent,
+      reminder_2h_sent,
+      created_at,
+      updated_at,
+      classes(id, scheduled_at, duration_minutes, status)
+    `)
+    .eq('student_id', studentId)
+
+  if (options?.status) {
+    query = query.eq('status', options.status)
+  }
+
+  if (options?.upcoming) {
+    query = query.gte('classes.scheduled_at', new Date().toISOString())
+  }
+
+  query = query.order('classes.scheduled_at', { ascending: options?.upcoming ? true : false })
+
+  if (options?.limit) {
+    query = query.limit(options.limit)
+  }
+
+  if (options?.offset) {
+    query = query.range(options.offset, options.offset + (options.limit || 10) - 1)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return (data || [])
+    .filter(b => b.classes)
+    .map(b => {
+      // Supabase puede devolver un objeto o array dependiendo de la relación
+      const classData = (Array.isArray(b.classes) ? b.classes[0] : b.classes) as {
+        id: string
+        scheduled_at: string
+        duration_minutes: number
+        status: string
+      }
+      return {
+        id: b.id,
+        class_id: b.class_id,
+        student_id: b.student_id,
+        status: b.status,
+        reminder_24h_sent: b.reminder_24h_sent,
+        reminder_2h_sent: b.reminder_2h_sent,
+        created_at: b.created_at,
+        updated_at: b.updated_at,
+        class: classData,
+      }
+    })
+    .filter(b => b.class) // Filtrar bookings sin clase válida
+}
+
+/**
+ * Obtiene estadísticas de asistencia de un estudiante
+ */
+export async function getStudentAttendanceStats(studentId: string): Promise<{
+  total: number
+  completed: number
+  cancelled: number
+  upcoming: number
+}> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('bookings')
+    .select(`
+      status,
+      classes(scheduled_at)
+    `)
+    .eq('student_id', studentId)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  const bookings = data || []
+  const now = new Date()
+
+  return {
+    total: bookings.length,
+    completed: bookings.filter(b => b.status === 'completed').length,
+    cancelled: bookings.filter(b => b.status === 'cancelled').length,
+    upcoming: bookings.filter(b => {
+      // Supabase puede devolver un objeto o array dependiendo de la relación
+      const classData = (Array.isArray(b.classes) ? b.classes[0] : b.classes) as { scheduled_at: string } | null
+      return b.status === 'confirmed' && classData && new Date(classData.scheduled_at) > now
+    }).length,
   }
 }
 

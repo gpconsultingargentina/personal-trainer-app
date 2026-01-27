@@ -1,10 +1,18 @@
-ultimo_id: 2
-activos:
-  - id: "002"
-    archivo: "002-migracion-stack-nextjs16-pwa.md"
-    titulo: "Migración Stack Next.js 16 + Tailwind 4 + PWA"
-    estado: "pendiente"
+ultimo_id: 4
+activos: []
 completados:
+  - id: "002"
+    archivo: "completados/cerrado-002-migracion-stack-nextjs16-pwa.md"
+    titulo: "Migración Stack Next.js 16 + Tailwind 4 + PWA"
+    cerrado: "2026-01-27"
+  - id: "004"
+    archivo: "completados/cerrado-004-auth-alumnos.md"
+    titulo: "Auth de Alumnos con Roles"
+    cerrado: "2025-01-27"
+  - id: "003"
+    archivo: "completados/cerrado-003-sistema-creditos-flexibles.md"
+    titulo: "Migracion a Sistema de Creditos Flexibles"
+    cerrado: "2025-01-27"
   - id: "001"
     archivo: "completados/cerrado-001-fix-payment-proofs-plan-dependency.md"
     titulo: "Desacoplar payment_proofs de class_plans"

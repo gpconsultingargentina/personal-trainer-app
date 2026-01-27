@@ -44,7 +44,15 @@ export default function LoginPage() {
       if (error) {
         setError(error.message)
       } else {
-        router.push('/dashboard')
+        // Obtener el rol del usuario para redirigir correctamente
+        const { data: { user } } = await supabase.auth.getUser()
+        const role = user?.user_metadata?.role
+
+        if (role === 'student') {
+          router.push('/portal')
+        } else {
+          router.push('/dashboard')
+        }
         router.refresh()
       }
     } catch (err) {

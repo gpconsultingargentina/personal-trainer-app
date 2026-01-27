@@ -28,14 +28,27 @@ export default async function StudentsPage() {
                 <Link href={`/dashboard/students/${student.id}`}>
                   <div className="px-6 py-4 hover:bg-gray-50 cursor-pointer">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-lg font-medium text-gray-900">
-                          {student.name}
-                        </h3>
-                        <p className="mt-1 text-sm text-gray-500">{student.email}</p>
-                        {student.phone && (
-                          <p className="mt-1 text-sm text-gray-500">{student.phone}</p>
-                        )}
+                      <div className="flex items-center space-x-3">
+                        <div>
+                          <div className="flex items-center space-x-2">
+                            <h3 className="text-lg font-medium text-gray-900">
+                              {student.name}
+                            </h3>
+                            {student.auth_user_id ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                Registrado
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                Pendiente
+                              </span>
+                            )}
+                          </div>
+                          <p className="mt-1 text-sm text-gray-500">{student.email}</p>
+                          {student.phone && (
+                            <p className="mt-1 text-sm text-gray-500">{student.phone}</p>
+                          )}
+                        </div>
                       </div>
                       <div className="text-sm text-gray-400">
                         →

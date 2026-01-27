@@ -1,6 +1,8 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+type UserRole = 'trainer' | 'student' | null
+
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
     request: {
@@ -13,66 +15,86 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value
+        getAll() {
+          return request.cookies.getAll()
         },
-        set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({
-            name,
-            value,
-            ...options,
+        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
+          cookiesToSet.forEach(({ name, value }) => {
+            request.cookies.set(name, value)
           })
           response = NextResponse.next({
             request: {
               headers: request.headers,
             },
           })
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          })
-        },
-        remove(name: string, options: CookieOptions) {
-          request.cookies.set({
-            name,
-            value: '',
-            ...options,
-          })
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          })
-          response.cookies.set({
-            name,
-            value: '',
-            ...options,
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options)
           })
         },
       },
     }
   )
 
-  // Proteger rutas del dashboard
-  if (request.nextUrl.pathname.startsWith('/dashboard')) {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
+  // Refresh session automáticamente
+  const { data: { user } } = await supabase.auth.getUser()
 
-    if (!session) {
+  const pathname = request.nextUrl.pathname
+  const role = user?.user_metadata?.role as UserRole
+
+  // Proteger rutas del dashboard - solo trainer
+  if (pathname.startsWith('/dashboard')) {
+    if (!user) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+
+    if (role !== 'trainer') {
+      // Si es student, redirigir a portal
+      if (role === 'student') {
+        return NextResponse.redirect(new URL('/portal', request.url))
+      }
+      // Si no tiene rol, redirigir a login
       return NextResponse.redirect(new URL('/login', request.url))
     }
   }
 
-  // Redirigir a dashboard si ya está autenticado y trata de ir a login
-  if (request.nextUrl.pathname === '/login') {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
+  // Proteger rutas del portal - solo student
+  if (pathname.startsWith('/portal')) {
+    if (!user) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
 
-    if (session) {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+    if (role !== 'student') {
+      // Si es trainer, redirigir a dashboard
+      if (role === 'trainer') {
+        return NextResponse.redirect(new URL('/dashboard', request.url))
+      }
+      // Si no tiene rol, redirigir a login
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+  }
+
+  // Página de login - redirigir según rol si ya autenticado
+  if (pathname === '/login') {
+    if (user) {
+      if (role === 'trainer') {
+        return NextResponse.redirect(new URL('/dashboard', request.url))
+      }
+      if (role === 'student') {
+        return NextResponse.redirect(new URL('/portal', request.url))
+      }
+      // Usuario sin rol válido, mantener en login
+    }
+  }
+
+  // Página de registro - solo sin autenticar
+  if (pathname === '/registro') {
+    if (user) {
+      if (role === 'trainer') {
+        return NextResponse.redirect(new URL('/dashboard', request.url))
+      }
+      if (role === 'student') {
+        return NextResponse.redirect(new URL('/portal', request.url))
+      }
     }
   }
 

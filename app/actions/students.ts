@@ -5,13 +5,32 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { sendWelcomeEmail } from '@/app/lib/email'
 
+export type UsualScheduleItem = {
+  dayOfWeek: number // 0-6 (domingo-sábado)
+  time: string // HH:mm
+}
+
 export type Student = {
   id: string
+  auth_user_id: string | null
   name: string
   email: string
   phone: string | null
+  frequency_id: string | null
+  usual_schedule: UsualScheduleItem[]
   created_at: string
   updated_at: string
+}
+
+export type StudentWithFrequency = Student & {
+  auth_user_id: string | null
+  frequency?: {
+    id: string
+    frequency_code: string
+    classes_per_week: number
+    price_per_class: number
+    description: string | null
+  } | null
 }
 
 export async function createOrGetStudent(
@@ -76,7 +95,37 @@ export async function getStudents(): Promise<Student[]> {
     throw new Error(error.message)
   }
 
-  return data || []
+  return (data || []).map((s) => ({
+    ...s,
+    usual_schedule: s.usual_schedule || [],
+  }))
+}
+
+export async function getStudentsWithFrequency(): Promise<StudentWithFrequency[]> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('students')
+    .select(`
+      *,
+      frequency:frequency_prices(
+        id,
+        frequency_code,
+        classes_per_week,
+        price_per_class,
+        description
+      )
+    `)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return (data || []).map((s) => ({
+    ...s,
+    usual_schedule: s.usual_schedule || [],
+  }))
 }
 
 export async function getStudent(id: string): Promise<Student | null> {
@@ -92,7 +141,40 @@ export async function getStudent(id: string): Promise<Student | null> {
     return null
   }
 
-  return data
+  return {
+    ...data,
+    usual_schedule: data.usual_schedule || [],
+  }
+}
+
+export async function getStudentWithFrequency(
+  id: string
+): Promise<StudentWithFrequency | null> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('students')
+    .select(`
+      *,
+      frequency:frequency_prices(
+        id,
+        frequency_code,
+        classes_per_week,
+        price_per_class,
+        description
+      )
+    `)
+    .eq('id', id)
+    .single()
+
+  if (error) {
+    return null
+  }
+
+  return {
+    ...data,
+    usual_schedule: data.usual_schedule || [],
+  }
 }
 
 export async function createStudent(formData: FormData) {
@@ -101,6 +183,17 @@ export async function createStudent(formData: FormData) {
   const name = formData.get('name') as string
   const email = formData.get('email') as string
   const phone = formData.get('phone') as string
+  const frequencyId = formData.get('frequency_id') as string | null
+  const usualScheduleRaw = formData.get('usual_schedule') as string | null
+
+  let usualSchedule: UsualScheduleItem[] = []
+  if (usualScheduleRaw) {
+    try {
+      usualSchedule = JSON.parse(usualScheduleRaw)
+    } catch {
+      usualSchedule = []
+    }
+  }
 
   // Verificar si el estudiante ya existe
   const { data: existing } = await supabase
@@ -116,7 +209,12 @@ export async function createStudent(formData: FormData) {
     // Actualizar estudiante existente
     const { data: updated, error: updateError } = await supabase
       .from('students')
-      .update({ name, phone: phone || null })
+      .update({
+        name,
+        phone: phone || null,
+        frequency_id: frequencyId || null,
+        usual_schedule: usualSchedule,
+      })
       .eq('id', existing.id)
       .select()
       .single()
@@ -134,6 +232,8 @@ export async function createStudent(formData: FormData) {
         name,
         email,
         phone: phone || null,
+        frequency_id: frequencyId || null,
+        usual_schedule: usualSchedule,
       })
       .select()
       .single()
@@ -158,6 +258,35 @@ export async function createStudent(formData: FormData) {
 
   revalidatePath('/dashboard/students')
   redirect('/dashboard/students')
+}
+
+export async function updateStudent(
+  id: string,
+  data: {
+    name?: string
+    phone?: string | null
+    frequency_id?: string | null
+    usual_schedule?: UsualScheduleItem[]
+  }
+) {
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('students')
+    .update({
+      ...(data.name && { name: data.name }),
+      ...(data.phone !== undefined && { phone: data.phone }),
+      ...(data.frequency_id !== undefined && { frequency_id: data.frequency_id }),
+      ...(data.usual_schedule !== undefined && { usual_schedule: data.usual_schedule }),
+    })
+    .eq('id', id)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  revalidatePath('/dashboard/students')
+  return { success: true }
 }
 
 export async function deleteStudent(id: string) {
@@ -187,5 +316,133 @@ export async function deleteStudents(ids: string[]) {
 
   revalidatePath('/dashboard/students')
   return { success: true, deletedCount: ids.length }
+}
+
+/**
+ * Obtiene un estudiante por su auth_user_id
+ */
+export async function getStudentByAuthUserId(
+  authUserId: string
+): Promise<StudentWithFrequency | null> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('students')
+    .select(`
+      *,
+      frequency:frequency_prices(
+        id,
+        frequency_code,
+        classes_per_week,
+        price_per_class,
+        description
+      )
+    `)
+    .eq('auth_user_id', authUserId)
+    .single()
+
+  if (error) {
+    return null
+  }
+
+  return {
+    ...data,
+    usual_schedule: data.usual_schedule || [],
+  }
+}
+
+export type StudentPortalData = {
+  student: StudentWithFrequency
+  credits: {
+    available: number
+    expiringSoon: number
+    nextExpirationDate: string | null
+  }
+  upcomingClasses: Array<{
+    id: string
+    booking_id: string
+    scheduled_at: string
+    status: string
+  }>
+}
+
+/**
+ * Obtiene los datos del portal para un alumno
+ * Incluye créditos y próximas clases
+ */
+export async function getStudentForPortal(
+  authUserId: string
+): Promise<StudentPortalData | null> {
+  const supabase = await createClient()
+
+  // Obtener estudiante
+  const student = await getStudentByAuthUserId(authUserId)
+
+  if (!student) {
+    return null
+  }
+
+  // Obtener créditos activos
+  const { data: creditBalances } = await supabase
+    .from('credit_balances')
+    .select('classes_remaining, expires_at')
+    .eq('student_id', student.id)
+    .eq('status', 'active')
+    .order('expires_at', { ascending: true })
+
+  const balances = creditBalances || []
+  const available = balances.reduce((sum, cb) => sum + cb.classes_remaining, 0)
+
+  // Créditos que vencen en 7 días
+  const sevenDaysFromNow = new Date()
+  sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7)
+
+  const expiringSoon = balances
+    .filter((cb) => new Date(cb.expires_at) <= sevenDaysFromNow)
+    .reduce((sum, cb) => sum + cb.classes_remaining, 0)
+
+  const nextExpirationDate = balances.length > 0 ? balances[0].expires_at : null
+
+  // Obtener próximas clases
+  const { data: bookings } = await supabase
+    .from('bookings')
+    .select(`
+      id,
+      status,
+      classes(id, scheduled_at, status)
+    `)
+    .eq('student_id', student.id)
+    .eq('status', 'confirmed')
+    .gte('classes.scheduled_at', new Date().toISOString())
+    .order('classes.scheduled_at', { ascending: true })
+    .limit(5)
+
+  const upcomingClasses = (bookings || [])
+    .filter(b => b.classes)
+    .map(b => {
+      // Supabase puede devolver un objeto o array
+      const classData = (Array.isArray(b.classes) ? b.classes[0] : b.classes) as {
+        id: string
+        scheduled_at: string
+        status: string
+      }
+      return {
+        id: classData.id,
+        booking_id: b.id,
+        scheduled_at: classData.scheduled_at,
+        status: b.status,
+      }
+    })
+    .filter(b => b.id) // Filtrar si no hay clase válida
+
+  return {
+    student,
+    credits: {
+      available,
+      expiringSoon,
+      nextExpirationDate,
+    },
+    upcomingClasses,
+  }
 }
 
