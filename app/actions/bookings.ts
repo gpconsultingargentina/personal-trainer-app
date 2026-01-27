@@ -3,6 +3,7 @@
 import { createClient, createServiceClient } from '@/app/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { deductCredit } from './credits'
+import { getStudentWithFrequency } from './students'
 
 export type Booking = {
   id: string
@@ -11,8 +12,18 @@ export type Booking = {
   status: 'confirmed' | 'cancelled' | 'completed'
   reminder_24h_sent: boolean
   reminder_2h_sent: boolean
+  cancelled_at: string | null
+  cancellation_reason: string | null
+  is_late_cancellation: boolean
   created_at: string
   updated_at: string
+}
+
+// Mapeo de frecuencia a tolerancia de cancelaciones tardías por mes
+const LATE_CANCELLATION_TOLERANCE: Record<string, number> = {
+  '3x': 2, // 3 clases/semana = 2 cancelaciones tardías permitidas/mes
+  '2x': 1, // 2 clases/semana = 1 cancelación tardía permitida/mes
+  '1x': 1, // 1 clase/semana = 1 cancelación tardía permitida/mes
 }
 
 export async function createBooking(classId: string, studentId: string) {
@@ -530,6 +541,9 @@ export async function getStudentBookings(
       status,
       reminder_24h_sent,
       reminder_2h_sent,
+      cancelled_at,
+      cancellation_reason,
+      is_late_cancellation,
       created_at,
       updated_at,
       classes(id, scheduled_at, duration_minutes, status)
@@ -577,6 +591,9 @@ export async function getStudentBookings(
         status: b.status,
         reminder_24h_sent: b.reminder_24h_sent,
         reminder_2h_sent: b.reminder_2h_sent,
+        cancelled_at: b.cancelled_at,
+        cancellation_reason: b.cancellation_reason,
+        is_late_cancellation: b.is_late_cancellation ?? false,
         created_at: b.created_at,
         updated_at: b.updated_at,
         class: classData,
@@ -620,6 +637,339 @@ export async function getStudentAttendanceStats(studentId: string): Promise<{
       const classData = (Array.isArray(b.classes) ? b.classes[0] : b.classes) as { scheduled_at: string } | null
       return b.status === 'confirmed' && classData && new Date(classData.scheduled_at) > now
     }).length,
+  }
+}
+
+/**
+ * Obtiene la cantidad de cancelaciones tardías del mes actual para un estudiante
+ */
+export async function getLateCancellationsThisMonth(studentId: string): Promise<number> {
+  const supabase = await createClient()
+
+  // Calcular inicio del mes actual
+  const now = new Date()
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('id')
+    .eq('student_id', studentId)
+    .eq('is_late_cancellation', true)
+    .gte('cancelled_at', startOfMonth.toISOString())
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return data?.length || 0
+}
+
+/**
+ * Obtiene la tolerancia de cancelaciones tardías para un estudiante
+ * basada en su frecuencia de clases
+ */
+export async function getStudentLateCancellationTolerance(studentId: string): Promise<{
+  tolerance: number
+  used: number
+  remaining: number
+  frequencyCode: string | null
+}> {
+  const student = await getStudentWithFrequency(studentId)
+
+  if (!student?.frequency) {
+    return { tolerance: 1, used: 0, remaining: 1, frequencyCode: null }
+  }
+
+  const frequencyCode = student.frequency.frequency_code
+  const tolerance = LATE_CANCELLATION_TOLERANCE[frequencyCode] || 1
+  const used = await getLateCancellationsThisMonth(studentId)
+
+  return {
+    tolerance,
+    used,
+    remaining: Math.max(0, tolerance - used),
+    frequencyCode,
+  }
+}
+
+export type CancellationResult = {
+  success: boolean
+  isLate: boolean
+  creditDeducted: boolean
+  message: string
+  toleranceInfo?: {
+    used: number
+    remaining: number
+    tolerance: number
+  }
+}
+
+/**
+ * Cancela una reserva aplicando la política de cancelaciones:
+ * - +24h anticipación: sin penalidad
+ * - -24h anticipación: depende de tolerancia mensual
+ * - Si excede tolerancia: pierde la clase (descuenta crédito)
+ */
+export async function cancelBookingWithPolicy(
+  bookingId: string,
+  reason?: string
+): Promise<CancellationResult> {
+  const supabase = await createClient()
+
+  // Obtener la reserva con datos de la clase
+  const { data: booking, error: fetchError } = await supabase
+    .from('bookings')
+    .select(`
+      id,
+      class_id,
+      student_id,
+      status,
+      classes(id, scheduled_at)
+    `)
+    .eq('id', bookingId)
+    .single()
+
+  if (fetchError || !booking) {
+    return { success: false, isLate: false, creditDeducted: false, message: 'Reserva no encontrada' }
+  }
+
+  if (booking.status !== 'confirmed') {
+    return { success: false, isLate: false, creditDeducted: false, message: 'La reserva ya no está activa' }
+  }
+
+  const classData = (Array.isArray(booking.classes) ? booking.classes[0] : booking.classes) as {
+    id: string
+    scheduled_at: string
+  } | null
+
+  if (!classData) {
+    return { success: false, isLate: false, creditDeducted: false, message: 'Clase no encontrada' }
+  }
+
+  const now = new Date()
+  const scheduledAt = new Date(classData.scheduled_at)
+  const hoursUntilClass = (scheduledAt.getTime() - now.getTime()) / (1000 * 60 * 60)
+
+  // Determinar si es cancelación tardía
+  const isLate = hoursUntilClass < 24
+
+  let creditDeducted = false
+  let toleranceInfo: CancellationResult['toleranceInfo'] = undefined
+
+  if (isLate) {
+    // Verificar tolerancia mensual
+    const tolerance = await getStudentLateCancellationTolerance(booking.student_id)
+    toleranceInfo = {
+      used: tolerance.used,
+      remaining: tolerance.remaining,
+      tolerance: tolerance.tolerance,
+    }
+
+    if (tolerance.remaining <= 0) {
+      // Excedió tolerancia: descontar crédito
+      try {
+        await deductCredit(booking.student_id, bookingId)
+        creditDeducted = true
+      } catch {
+        // Si no hay créditos, continuar con la cancelación
+      }
+    }
+  }
+
+  // Actualizar la reserva
+  const { error: updateError } = await supabase
+    .from('bookings')
+    .update({
+      status: 'cancelled',
+      cancelled_at: now.toISOString(),
+      cancellation_reason: reason || null,
+      is_late_cancellation: isLate,
+    })
+    .eq('id', bookingId)
+
+  if (updateError) {
+    return { success: false, isLate, creditDeducted: false, message: updateError.message }
+  }
+
+  // Decrementar contador de reservas en la clase
+  const { data: currentClass } = await supabase
+    .from('classes')
+    .select('current_bookings')
+    .eq('id', booking.class_id)
+    .single()
+
+  if (currentClass && currentClass.current_bookings > 0) {
+    await supabase
+      .from('classes')
+      .update({ current_bookings: currentClass.current_bookings - 1 })
+      .eq('id', booking.class_id)
+  }
+
+  // Si se descontó crédito, registrar transacción
+  if (creditDeducted) {
+    const serviceClient = await createServiceClient()
+
+    // Obtener el balance activo más antiguo
+    const { data: balances } = await serviceClient
+      .from('credit_balances')
+      .select('id')
+      .eq('student_id', booking.student_id)
+      .order('expires_at', { ascending: true })
+      .limit(1)
+
+    if (balances && balances.length > 0) {
+      await serviceClient.from('credit_transactions').insert({
+        credit_balance_id: balances[0].id,
+        student_id: booking.student_id,
+        booking_id: bookingId,
+        transaction_type: 'late_cancellation',
+        amount: -1,
+        balance_after: 0, // Se actualizará con el valor correcto por el deductCredit
+        notes: 'Cancelación tardía - excedió tolerancia mensual',
+      })
+    }
+  }
+
+  revalidatePath('/portal/clases')
+  revalidatePath('/dashboard/students')
+  revalidatePath('/dashboard/classes')
+
+  // Construir mensaje
+  let message: string
+  if (!isLate) {
+    message = 'Clase cancelada correctamente'
+  } else if (creditDeducted) {
+    message = 'Clase cancelada. Se descontó 1 crédito por exceder la tolerancia mensual'
+  } else {
+    message = `Clase cancelada dentro de tu tolerancia mensual (${toleranceInfo!.used + 1}/${toleranceInfo!.tolerance})`
+  }
+
+  return {
+    success: true,
+    isLate,
+    creditDeducted,
+    message,
+    toleranceInfo,
+  }
+}
+
+/**
+ * Verifica si una reserva puede cancelarse y con qué consecuencias
+ * Útil para mostrar información al usuario antes de confirmar
+ */
+export async function checkCancellationConsequences(bookingId: string): Promise<{
+  canCancel: boolean
+  isLate: boolean
+  willDeductCredit: boolean
+  hoursUntilClass: number
+  toleranceInfo: {
+    used: number
+    remaining: number
+    tolerance: number
+  } | null
+  message: string
+}> {
+  const supabase = await createClient()
+
+  const { data: booking, error } = await supabase
+    .from('bookings')
+    .select(`
+      id,
+      student_id,
+      status,
+      classes(scheduled_at)
+    `)
+    .eq('id', bookingId)
+    .single()
+
+  if (error || !booking) {
+    return {
+      canCancel: false,
+      isLate: false,
+      willDeductCredit: false,
+      hoursUntilClass: 0,
+      toleranceInfo: null,
+      message: 'Reserva no encontrada',
+    }
+  }
+
+  if (booking.status !== 'confirmed') {
+    return {
+      canCancel: false,
+      isLate: false,
+      willDeductCredit: false,
+      hoursUntilClass: 0,
+      toleranceInfo: null,
+      message: 'La reserva ya no está activa',
+    }
+  }
+
+  const classData = (Array.isArray(booking.classes) ? booking.classes[0] : booking.classes) as {
+    scheduled_at: string
+  } | null
+
+  if (!classData) {
+    return {
+      canCancel: false,
+      isLate: false,
+      willDeductCredit: false,
+      hoursUntilClass: 0,
+      toleranceInfo: null,
+      message: 'Clase no encontrada',
+    }
+  }
+
+  const now = new Date()
+  const scheduledAt = new Date(classData.scheduled_at)
+  const hoursUntilClass = (scheduledAt.getTime() - now.getTime()) / (1000 * 60 * 60)
+
+  // No se puede cancelar clases pasadas
+  if (hoursUntilClass < 0) {
+    return {
+      canCancel: false,
+      isLate: false,
+      willDeductCredit: false,
+      hoursUntilClass,
+      toleranceInfo: null,
+      message: 'No se puede cancelar una clase que ya pasó',
+    }
+  }
+
+  const isLate = hoursUntilClass < 24
+
+  if (!isLate) {
+    return {
+      canCancel: true,
+      isLate: false,
+      willDeductCredit: false,
+      hoursUntilClass,
+      toleranceInfo: null,
+      message: 'Podés cancelar sin penalidad (más de 24h de anticipación)',
+    }
+  }
+
+  // Verificar tolerancia
+  const tolerance = await getStudentLateCancellationTolerance(booking.student_id)
+  const willDeductCredit = tolerance.remaining <= 0
+
+  let message: string
+  if (willDeductCredit) {
+    message = 'Esta cancelación tardía excederá tu tolerancia mensual y se descontará 1 crédito'
+  } else {
+    message = `Cancelación tardía dentro de tu tolerancia (${tolerance.used}/${tolerance.tolerance} usadas este mes)`
+  }
+
+  return {
+    canCancel: true,
+    isLate: true,
+    willDeductCredit,
+    hoursUntilClass,
+    toleranceInfo: {
+      used: tolerance.used,
+      remaining: tolerance.remaining,
+      tolerance: tolerance.tolerance,
+    },
+    message,
   }
 }
 

@@ -23,7 +23,7 @@ export type CreditTransaction = {
   credit_balance_id: string
   student_id: string
   booking_id: string | null
-  transaction_type: 'purchase' | 'attendance' | 'adjustment' | 'expiration'
+  transaction_type: 'purchase' | 'attendance' | 'adjustment' | 'expiration' | 'late_cancellation'
   amount: number
   balance_after: number
   notes: string | null

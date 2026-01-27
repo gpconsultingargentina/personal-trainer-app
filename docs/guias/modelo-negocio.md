@@ -274,12 +274,12 @@ Cada alumno tiene:
 | Vencimiento 60 dias | Completado | Cron job automatico |
 | Descuento FIFO | Completado | Primero los mas proximos a vencer |
 | Ajuste manual de creditos | Completado | Con historial de motivos |
+| Auth de alumnos (roles) | Completado | Portal `/portal/*`, registro por invitacion |
 
 ### Pendiente
 
 | Prioridad | Tarea | Tamaño |
 |-----------|-------|--------|
-| Alta | Auth de alumnos (roles) | Mediano |
 | Media | Politica de cancelaciones | Chico |
 | Media | Integracion calendario (.ics) | Mediano |
 | Baja | Reportes | Mediano |

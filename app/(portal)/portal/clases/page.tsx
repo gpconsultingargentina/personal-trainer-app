@@ -1,7 +1,9 @@
 import { createClient } from '@/app/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { getStudentByAuthUserId } from '@/app/actions/students'
-import { getStudentBookings, getStudentAttendanceStats } from '@/app/actions/bookings'
+import { getStudentBookings, getStudentAttendanceStats, getStudentLateCancellationTolerance } from '@/app/actions/bookings'
+import CancelBookingButton from '@/app/components/cancel-booking-button/CancelBookingButton'
+import CalendarButtons from '@/app/components/calendar-buttons/CalendarButtons'
 
 function formatDateTime(dateString: string): string {
   return new Date(dateString).toLocaleDateString('es-AR', {
@@ -39,10 +41,11 @@ export default async function ClasesPage() {
     redirect('/login')
   }
 
-  const [upcomingBookings, pastBookings, stats] = await Promise.all([
+  const [upcomingBookings, pastBookings, stats, toleranceInfo] = await Promise.all([
     getStudentBookings(student.id, { upcoming: true, limit: 10 }),
     getStudentBookings(student.id, { limit: 50 }),
     getStudentAttendanceStats(student.id),
+    getStudentLateCancellationTolerance(student.id),
   ])
 
   // Filtrar clases pasadas (no upcoming)
@@ -54,13 +57,16 @@ export default async function ClasesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Mis Clases</h1>
-        <p className="mt-1 text-gray-600">Proximas clases e historial de asistencias</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Mis Clases</h1>
+          <p className="mt-1 text-gray-600">Proximas clases e historial de asistencias</p>
+        </div>
+        <CalendarButtons calendarToken={student.calendar_token} />
       </div>
 
       {/* Estadisticas */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
         <div className="bg-white shadow rounded-lg p-4">
           <p className="text-sm text-gray-500">Total clases</p>
           <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
@@ -79,6 +85,14 @@ export default async function ClasesPage() {
         <div className="bg-white shadow rounded-lg p-4">
           <p className="text-sm text-gray-500">Canceladas</p>
           <p className="text-2xl font-bold text-red-600">{stats.cancelled}</p>
+        </div>
+
+        <div className="bg-white shadow rounded-lg p-4">
+          <p className="text-sm text-gray-500">Tolerancia este mes</p>
+          <p className="text-2xl font-bold text-orange-600">
+            {toleranceInfo.remaining}/{toleranceInfo.tolerance}
+          </p>
+          <p className="text-xs text-gray-400">cancelaciones tardias</p>
         </div>
       </div>
 
@@ -104,9 +118,14 @@ export default async function ClasesPage() {
                     Duracion: {booking.class.duration_minutes} minutos
                   </p>
                 </div>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[booking.status]}`}>
-                  {statusLabels[booking.status]}
-                </span>
+                <div className="flex items-center gap-3">
+                  {booking.status === 'confirmed' && (
+                    <CancelBookingButton bookingId={booking.id} />
+                  )}
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[booking.status]}`}>
+                    {statusLabels[booking.status]}
+                  </span>
+                </div>
               </div>
             ))}
           </div>

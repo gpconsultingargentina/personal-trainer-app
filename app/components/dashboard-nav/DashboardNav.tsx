@@ -12,6 +12,7 @@ const navItems = [
   { href: '/dashboard/coupons', label: 'Cupones' },
   { href: '/dashboard/payments', label: 'Pagos' },
   { href: '/dashboard/students', label: 'Alumnos' },
+  { href: '/dashboard/reports', label: 'Reportes' },
 ]
 
 export default function DashboardNav() {

@@ -17,6 +17,7 @@
     "@tailwindcss/postcss": "^4.1.18",
     "clsx": "^2.1.0",
     "date-fns": "^3.3.1",
+    "ics": "^3.8.1",
     "lucide-react": "^0.473.0",
     "nanoid": "^5.0.4",
     "next": "^16.1.5",

@@ -48,12 +48,13 @@ export default function LoginPage() {
         const { data: { user } } = await supabase.auth.getUser()
         const role = user?.user_metadata?.role
 
+        // Usar window.location para forzar navegación completa
+        // Esto asegura que las cookies de sesión se envíen correctamente
         if (role === 'student') {
-          router.push('/portal')
+          window.location.href = '/portal'
         } else {
-          router.push('/dashboard')
+          window.location.href = '/dashboard'
         }
-        router.refresh()
       }
     } catch (err) {
       setError('Error al iniciar sesión')

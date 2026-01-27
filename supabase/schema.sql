@@ -147,13 +147,7 @@ CREATE TABLE IF NOT EXISTS credit_transactions (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Tabla de uso de cupones (para analytics)
-CREATE TABLE IF NOT EXISTS coupon_usage (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  coupon_id UUID NOT NULL REFERENCES coupons(id) ON DELETE CASCADE,
-  payment_proof_id UUID NOT NULL REFERENCES payment_proofs(id) ON DELETE CASCADE,
-  used_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+-- NOTA: coupon_usage fue eliminada (nunca se usó, tracking via payment_proofs.coupon_id)
 
 -- Tabla de log de notificaciones
 CREATE TABLE IF NOT EXISTS notifications_log (
@@ -223,7 +217,7 @@ ALTER TABLE coupon_plans ENABLE ROW LEVEL SECURITY;
 ALTER TABLE classes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payment_proofs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE coupon_usage ENABLE ROW LEVEL SECURITY;
+-- coupon_usage eliminada
 ALTER TABLE notifications_log ENABLE ROW LEVEL SECURITY;
 ALTER TABLE frequency_prices ENABLE ROW LEVEL SECURITY;
 ALTER TABLE credit_balances ENABLE ROW LEVEL SECURITY;
@@ -266,9 +260,7 @@ CREATE POLICY "Trainer can update payment proofs" ON payment_proofs FOR UPDATE U
 -- Los estudiantes pueden ver solo sus propios comprobantes
 CREATE POLICY "Students can view own payment proofs" ON payment_proofs FOR SELECT USING (true); -- Ajustar con identificación de estudiante
 
--- Políticas para uso de cupones
-CREATE POLICY "Anyone can insert coupon usage" ON coupon_usage FOR INSERT WITH CHECK (true);
-CREATE POLICY "Trainer can view coupon usage" ON coupon_usage FOR SELECT USING (auth.role() = 'authenticated');
+-- coupon_usage eliminada - tracking via payment_proofs.coupon_id
 
 -- Políticas para log de notificaciones
 CREATE POLICY "Trainer can view notifications log" ON notifications_log FOR SELECT USING (auth.role() = 'authenticated');

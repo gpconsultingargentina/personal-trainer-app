@@ -18,6 +18,7 @@ export type Student = {
   phone: string | null
   frequency_id: string | null
   usual_schedule: UsualScheduleItem[]
+  calendar_token: string | null
   created_at: string
   updated_at: string
 }
