@@ -46,18 +46,18 @@ export default function PaymentActions({ paymentId, studentName }: PaymentAction
   }
 
   return (
-    <div className="flex space-x-2">
+    <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
       <button
         onClick={handleApprove}
         disabled={loading !== null}
-        className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        className="px-4 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading === 'approve' ? 'Aprobando...' : 'Aprobar'}
       </button>
       <button
         onClick={handleReject}
         disabled={loading !== null}
-        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        className="px-4 py-3 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading === 'reject' ? 'Rechazando...' : 'Rechazar'}
       </button>
