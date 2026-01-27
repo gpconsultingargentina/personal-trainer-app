@@ -1,4 +1,5 @@
 import { createClient } from '@/app/lib/supabase/server'
+import PriceManagementModal from '@/app/components/price-management-modal/PriceManagementModal'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -119,6 +120,14 @@ export default async function DashboardPage() {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Acciones rápidas */}
+      <div className="mt-8">
+        <h2 className="text-lg font-medium text-foreground mb-4">Configuración</h2>
+        <div className="bg-surface p-4 rounded shadow">
+          <PriceManagementModal />
         </div>
       </div>
     </div>
