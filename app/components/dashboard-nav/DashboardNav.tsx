@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { logout } from '@/app/actions/auth'
+import InstallPWA from '@/app/components/install-pwa/InstallPWA'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard' },
@@ -58,6 +59,11 @@ export default function DashboardNav() {
           </div>
 
           <div className="flex items-center">
+            {/* Desktop install */}
+            <div className="hidden sm:block">
+              <InstallPWA variant="desktop" />
+            </div>
+
             {/* Desktop logout */}
             <form action={logout} className="hidden sm:block">
               <button
@@ -108,6 +114,7 @@ export default function DashboardNav() {
                 {item.label}
               </Link>
             ))}
+            <InstallPWA />
             <form action={logout} className="border-t border-border pt-2">
               <button
                 type="submit"
