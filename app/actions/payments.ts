@@ -6,7 +6,8 @@ import { revalidatePath } from 'next/cache'
 export type PaymentProof = {
   id: string
   student_id: string
-  plan_id: string
+  plan_id: string | null
+  plan_name: string | null
   coupon_id: string | null
   original_price: number
   final_price: number
@@ -44,6 +45,7 @@ export async function getPaymentProofs(status?: string): Promise<PaymentProof[]>
 export async function createPaymentProof(data: {
   student_id: string
   plan_id: string
+  plan_name: string
   coupon_id?: string | null
   original_price: number
   final_price: number
@@ -58,6 +60,7 @@ export async function createPaymentProof(data: {
     .insert({
       student_id: data.student_id,
       plan_id: data.plan_id,
+      plan_name: data.plan_name,
       coupon_id: data.coupon_id || null,
       original_price: data.original_price,
       final_price: data.final_price,

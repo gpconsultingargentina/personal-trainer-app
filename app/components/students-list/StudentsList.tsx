@@ -101,28 +101,32 @@ export default function StudentsList({ students }: StudentsListProps) {
 
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
         <ul className="divide-y divide-gray-200">
-          <li className="px-6 py-3 bg-gray-50 border-b border-gray-200">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                checked={selectedIds.size === students.length && students.length > 0}
-                onChange={toggleSelectAll}
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-              />
+          <li className="px-4 sm:px-6 py-3 bg-gray-50 border-b border-gray-200">
+            <label className="flex items-center cursor-pointer">
+              <span className="p-2 -m-2">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.size === students.length && students.length > 0}
+                  onChange={toggleSelectAll}
+                  className="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                />
+              </span>
               <span className="ml-3 text-sm font-medium text-gray-700">Seleccionar todos</span>
-            </div>
+            </label>
           </li>
           {students.map((student) => (
             <li key={student.id}>
-              <div className="px-6 py-4 hover:bg-gray-50">
+              <div className="px-4 sm:px-6 py-4 hover:bg-gray-50">
                 <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.has(student.id)}
-                    onChange={() => toggleSelect(student.id)}
-                    onClick={(e) => e.stopPropagation()}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                  />
+                  <span className="p-2 -m-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(student.id)}
+                      onChange={() => toggleSelect(student.id)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    />
+                  </span>
                   <Link href={`/dashboard/students/${student.id}`} className="flex-1 ml-3">
                     <div className="flex items-center justify-between">
                       <div>

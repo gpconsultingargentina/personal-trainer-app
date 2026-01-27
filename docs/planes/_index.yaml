@@ -1,0 +1,11 @@
+ultimo_id: 2
+activos:
+  - id: "002"
+    archivo: "002-migracion-stack-nextjs16-pwa.md"
+    titulo: "Migración Stack Next.js 16 + Tailwind 4 + PWA"
+    estado: "pendiente"
+completados:
+  - id: "001"
+    archivo: "completados/cerrado-001-fix-payment-proofs-plan-dependency.md"
+    titulo: "Desacoplar payment_proofs de class_plans"
+    cerrado: "2025-01-27"

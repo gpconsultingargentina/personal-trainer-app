@@ -315,14 +315,14 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
                       {isSelected && (
                         <div className="flex items-center space-x-2">
                           <div className="flex items-center space-x-1">
-                            <label htmlFor={`hour_${day.value}`} className="text-xs text-gray-600">
+                            <label htmlFor={`hour_${day.value}`} className="text-sm text-gray-600">
                               Hora:
                             </label>
                             <select
                               id={`hour_${day.value}`}
                               value={dayTime.hour}
                               onChange={(e) => updateDayTime(day.value, 'hour', e.target.value)}
-                              className="block w-20 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                              className="block w-16 sm:w-20 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base py-2"
                             >
                               {hours.map((h) => (
                                 <option key={h} value={h}>
@@ -333,14 +333,14 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
                           </div>
                           <span className="text-gray-400">:</span>
                           <div className="flex items-center space-x-1">
-                            <label htmlFor={`minute_${day.value}`} className="text-xs text-gray-600">
+                            <label htmlFor={`minute_${day.value}`} className="text-sm text-gray-600">
                               Min:
                             </label>
                             <select
                               id={`minute_${day.value}`}
                               value={dayTime.minute}
                               onChange={(e) => updateDayTime(day.value, 'minute', e.target.value)}
-                              className="block w-20 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                              className="block w-16 sm:w-20 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base py-2"
                             >
                               {minutes.map((m) => (
                                 <option key={m} value={m}>
@@ -395,7 +395,7 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label
             htmlFor="duration_minutes"
@@ -450,21 +450,21 @@ export default function StudentClassForm({ studentId, studentName }: StudentClas
         />
       </div>
 
-      <div className="flex justify-end space-x-3">
+      <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+          className="px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
         >
           Cancelar
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+          className="px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
         >
-          {loading 
-            ? (mode === 'recurring' ? 'Creando clases...' : 'Creando...') 
+          {loading
+            ? (mode === 'recurring' ? 'Creando clases...' : 'Creando...')
             : (mode === 'recurring' ? 'Crear Clases Recurrentes' : 'Crear y Reservar Clase')}
         </button>
       </div>

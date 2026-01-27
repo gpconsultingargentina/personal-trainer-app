@@ -2,6 +2,19 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Reglas de Git
+
+**NUNCA hacer `git push` sin permiso explícito del usuario.** Los commits se pueden hacer, pero el push requiere aprobación directa. Preguntar siempre antes de pushear.
+
+## Documentación
+
+El proyecto usa documentación estructurada en `/docs`:
+- `/docs/planes` - Features a implementar
+- `/docs/issues` - Bugs y tareas puntuales
+- `/docs/guias` - Reglas y patrones
+
+**Antes de crear/cerrar planes o issues**, leer `docs/guias/documentacion.md` para el procedimiento.
+
 ## Project Overview
 
 Personal trainer management app with bank payments, discount coupons, and automatic reminders. Built for a single trainer to manage students, classes, payments, and bookings.

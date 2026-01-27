@@ -62,7 +62,7 @@ export default function ClassForm({ classData }: ClassFormProps) {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label
             htmlFor="date"
@@ -99,7 +99,7 @@ export default function ClassForm({ classData }: ClassFormProps) {
       {/* Input oculto para el formulario */}
       <input type="hidden" name="scheduled_at" value={date && time ? `${date}T${time}` : ''} />
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label
             htmlFor="duration_minutes"
@@ -180,14 +180,14 @@ export default function ClassForm({ classData }: ClassFormProps) {
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+          className="px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
         >
           Cancelar
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+          className="px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
         >
           {loading ? 'Guardando...' : classData ? 'Actualizar' : 'Crear'}
         </button>

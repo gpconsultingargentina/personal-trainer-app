@@ -30,6 +30,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Obtener el nombre del plan para guardar como snapshot
+    const { data: plan, error: planError } = await supabase
+      .from('class_plans')
+      .select('name')
+      .eq('id', planId)
+      .single()
+
+    if (planError || !plan) {
+      return NextResponse.json(
+        { error: 'Plan no encontrado' },
+        { status: 404 }
+      )
+    }
+
+    const planName = plan.name
+
     // Subir archivo usando service client
     const fileExt = file.name.split('.').pop()
     const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
@@ -63,6 +79,7 @@ export async function POST(request: NextRequest) {
     const insertData: any = {
       student_id: studentId,
       plan_id: planId,
+      plan_name: planName,
       original_price: originalPrice,
       final_price: finalPrice,
       discount_applied: discountApplied,

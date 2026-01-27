@@ -94,6 +94,7 @@ function PaymentUploadContent() {
       await createPaymentProof({
         student_id: student.id,
         plan_id: selectedPlan.id,
+        plan_name: selectedPlan.name,
         coupon_id: couponId || null,
         original_price: selectedPlan.price,
         final_price: finalPrice,

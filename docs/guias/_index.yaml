@@ -1,0 +1,7 @@
+guias:
+  - id: "documentacion"
+    archivo: "documentacion.md"
+    titulo: "Reglas de Documentación"
+  - id: "modelo-negocio"
+    archivo: "modelo-negocio.md"
+    titulo: "Modelo de Negocio - Conceptual"

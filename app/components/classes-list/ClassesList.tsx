@@ -77,16 +77,18 @@ export default function ClassesList({ classes }: ClassesListProps) {
   return (
     <>
       {/* Barra de acciones con selección masiva */}
-      <div className="px-6 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+      <div className="px-4 sm:px-6 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between flex-wrap gap-2">
         <label className="flex items-center cursor-pointer">
-          <input
-            type="checkbox"
-            ref={selectAllRef}
-            checked={allSelected}
-            onChange={toggleSelectAll}
-            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-          />
-          <span className="ml-2 text-sm font-medium text-gray-700">
+          <span className="p-2 -m-2">
+            <input
+              type="checkbox"
+              ref={selectAllRef}
+              checked={allSelected}
+              onChange={toggleSelectAll}
+              className="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            />
+          </span>
+          <span className="ml-3 text-sm font-medium text-gray-700">
             Seleccionar todas ({classes.length})
           </span>
         </label>
@@ -94,9 +96,9 @@ export default function ClassesList({ classes }: ClassesListProps) {
           <button
             onClick={handleDeleteSelected}
             disabled={isPending}
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            className="px-4 py-3 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
           >
-            {isPending ? 'Eliminando...' : `Eliminar ${selectedIds.size} seleccionada(s)`}
+            {isPending ? 'Eliminando...' : `Eliminar ${selectedIds.size}`}
           </button>
         )}
       </div>
@@ -106,13 +108,15 @@ export default function ClassesList({ classes }: ClassesListProps) {
 
         return (
           <li key={classItem.id}>
-            <div className="px-6 py-4 flex items-center gap-3">
-              <input
-                type="checkbox"
-                checked={isSelected}
-                onChange={() => toggleSelect(classItem.id)}
-                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-              />
+            <div className="px-4 sm:px-6 py-4 flex items-center gap-3">
+              <span className="p-2 -m-2">
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={() => toggleSelect(classItem.id)}
+                  className="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                />
+              </span>
               <div className="flex-1 flex items-center justify-between">
                 <div className="flex-1">
                   <div className="flex items-center">

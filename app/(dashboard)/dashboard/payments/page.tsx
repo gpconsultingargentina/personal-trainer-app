@@ -37,7 +37,7 @@ export default async function PaymentsPage() {
             </li>
           ) : (
             payments.map((payment) => {
-              const plan = plansMap.get(payment.plan_id)
+              const plan = payment.plan_id ? plansMap.get(payment.plan_id) : null
               const coupon = payment.coupon_id ? couponsMap.get(payment.coupon_id) : null
               const student = studentsMap.get(payment.student_id)
 
@@ -55,7 +55,7 @@ export default async function PaymentsPage() {
                           Email: {student?.email}
                         </p>
                         <p className="mt-1 text-sm text-gray-700">
-                          Plan: {plan?.name || 'Plan no encontrado'}
+                          Plan: {plan?.name || payment.plan_name || 'Plan eliminado'}
                         </p>
                         <div className="mt-2 flex items-baseline space-x-4">
                           <span className="text-sm text-gray-500 line-through">
