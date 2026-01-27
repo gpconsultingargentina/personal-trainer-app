@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
       .from('payment-proofs')
       .getPublicUrl(filePath)
 
-    return NextResponse.json({ url: publicUrl })
+    return NextResponse.json({ fileUrl: publicUrl })
   } catch (error) {
     console.error('Error en upload:', error)
     return NextResponse.json(
