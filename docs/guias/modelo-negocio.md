@@ -185,8 +185,8 @@ El entrenador puede **restar clases del saldo** de un alumno por incumplimiento 
 
 | Fase | Canal | Estado |
 |------|-------|--------|
-| 1 | Integración calendario (.ics) | Pendiente |
-| 2 | Email (Resend) | Futuro |
+| 1 | Integración calendario (.ics) | Completado |
+| 2 | Email (Resend) | Completado |
 | 3 | WhatsApp / SMS | Futuro |
 
 ### Alternativas para WhatsApp/SMS
@@ -275,15 +275,16 @@ Cada alumno tiene:
 | Descuento FIFO | Completado | Primero los mas proximos a vencer |
 | Ajuste manual de creditos | Completado | Con historial de motivos |
 | Auth de alumnos (roles) | Completado | Portal `/portal/*`, registro por invitacion |
+| Integracion calendario (.ics) | Completado | Export y suscripcion |
+| Reportes completos | Completado | Dashboard con metricas financieras, alumnos y operativas |
+| Politica de cancelaciones | Completado | Cancelacion con validacion de anticipacion |
+| PWA instalable | Completado | App instalable en celular |
 
 ### Pendiente
 
 | Prioridad | Tarea | Tamaño |
 |-----------|-------|--------|
-| Media | Politica de cancelaciones | Chico |
-| Media | Integracion calendario (.ics) | Mediano |
-| Baja | Reportes | Mediano |
-| Baja | Eliminar campos innecesarios | Chico |
+| Baja | WhatsApp/SMS recordatorios | Mediano |
 
 ---
 
@@ -324,6 +325,37 @@ markAttendance(bookingId)  // marca completada + descuenta credito
 |----------|------------|-----------|
 | `/api/cron/send-reminders` | Cada minuto | Recordatorios 24h y 2h |
 | `/api/cron/expire-credits` | Diario | Expira creditos vencidos |
+
+---
+
+## Instalacion de la App (PWA)
+
+La app es una **Progressive Web App (PWA)** que se puede instalar en el celular como si fuera una app nativa.
+
+### iPhone (iOS)
+
+1. Abrir **Safari** (no funciona desde Chrome en iOS)
+2. Ir a la URL de la app (ej: `https://otakufiit.vercel.app`)
+3. Tocar el boton de **Compartir** (cuadrado con flecha hacia arriba)
+4. Bajar en el menu y tocar **"Agregar a Inicio"**
+5. Ponerle nombre (o dejar "Otakufiit") y tocar **Agregar**
+6. El icono aparece en la pantalla de inicio
+
+### Android
+
+1. Abrir **Chrome**
+2. Ir a la URL de la app
+3. Tocar los **3 puntos** (menu) arriba a la derecha
+4. Tocar **"Instalar app"** o **"Agregar a pantalla de inicio"**
+5. Confirmar la instalacion
+6. El icono aparece en la pantalla de inicio
+
+### Beneficios de instalar
+
+- Abre como app nativa (sin barra del navegador)
+- Acceso rapido desde la pantalla de inicio
+- Funciona offline para ver datos cacheados
+- Recibe notificaciones (cuando se implemente)
 
 ---
 
