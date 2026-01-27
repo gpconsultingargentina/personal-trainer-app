@@ -326,6 +326,8 @@ export async function POST(request: NextRequest) {
 
 **Archivo:** `app/api/push/status/route.ts`
 
+> **IMPORTANTE**: Este endpoint tambien devuelve info sobre si el dispositivo actual esta suscrito, comparando con la suscripcion local del navegador.
+
 ```typescript
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/app/lib/supabase/server'
@@ -370,6 +372,93 @@ export async function GET(request: NextRequest) {
 }
 ```
 
+#### 3.4 Endpoint de Test (para desarrollo)
+
+**Archivo:** `app/api/push/test/route.ts`
+
+```typescript
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/app/lib/supabase/server'
+import { sendPushNotification } from '@/app/lib/notifications/push'
+
+// Solo disponible en desarrollo o con secret
+export async function POST(request: NextRequest) {
+  try {
+    // Proteger endpoint
+    const isDev = process.env.NODE_ENV === 'development'
+    const body = await request.json()
+
+    if (!isDev && body.secret !== process.env.CRON_SECRET) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+    }
+
+    const supabase = await createClient()
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
+    }
+
+    const { data: student } = await supabase
+      .from('students')
+      .select('id, name')
+      .eq('user_id', user.id)
+      .single()
+
+    if (!student) {
+      return NextResponse.json({ error: 'Alumno no encontrado' }, { status: 404 })
+    }
+
+    // Obtener suscripciones
+    const { data: subscriptions } = await supabase
+      .from('push_subscriptions')
+      .select('*')
+      .eq('student_id', student.id)
+
+    if (!subscriptions || subscriptions.length === 0) {
+      return NextResponse.json({
+        error: 'No hay suscripciones activas para este alumno'
+      }, { status: 404 })
+    }
+
+    // Enviar test a todos los dispositivos
+    const results = []
+    for (const sub of subscriptions) {
+      const result = await sendPushNotification(
+        {
+          endpoint: sub.endpoint,
+          p256dh: sub.p256dh,
+          auth: sub.auth,
+        },
+        {
+          title: 'Test de Notificacion',
+          body: `Hola ${student.name}, las notificaciones funcionan correctamente!`,
+          url: '/portal',
+          tag: 'test-notification',
+        }
+      )
+      results.push({
+        endpoint: sub.endpoint.substring(0, 50) + '...',
+        success: result.success,
+        error: result.error,
+      })
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: `Push enviado a ${subscriptions.length} dispositivo(s)`,
+      results
+    })
+  } catch (error) {
+    console.error('Error en test push:', error)
+    return NextResponse.json(
+      { error: 'Error interno' },
+      { status: 500 }
+    )
+  }
+}
+```
+
 ---
 
 ### Fase 4: Frontend - Componente de Notificaciones
@@ -388,12 +477,30 @@ export default function PushNotifications() {
   const [isSubscribed, setIsSubscribed] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [permission, setPermission] = useState<NotificationPermission>('default')
+  const [isIOS, setIsIOS] = useState(false)
+  const [isStandalone, setIsStandalone] = useState(false)
 
   useEffect(() => {
-    // Verificar soporte
+    // Detectar iOS
+    const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window)
+    setIsIOS(iOS)
+
+    // Detectar si es PWA instalada (standalone)
+    const standalone = window.matchMedia('(display-mode: standalone)').matches
+      || ('standalone' in navigator && (navigator as { standalone?: boolean }).standalone === true)
+    setIsStandalone(standalone)
+
+    // Verificar soporte de Push
     const supported = 'serviceWorker' in navigator
       && 'PushManager' in window
       && 'Notification' in window
+
+    // En iOS, push solo funciona si es PWA instalada
+    if (iOS && !standalone) {
+      setIsSupported(false)
+      setIsLoading(false)
+      return
+    }
 
     setIsSupported(supported)
 
@@ -483,7 +590,33 @@ export default function PushNotifications() {
     }
   }
 
-  // No mostrar si no hay soporte
+  // iOS sin instalar como PWA
+  if (isIOS && !isStandalone) {
+    return (
+      <div className="bg-surface-alt rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <svg className="h-6 w-6 text-primary flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+          <div>
+            <h3 className="font-medium text-foreground">
+              Notificaciones Push
+            </h3>
+            <p className="text-sm text-muted mt-1">
+              Para recibir notificaciones en iPhone/iPad, primero debes instalar la app:
+            </p>
+            <ol className="text-sm text-muted mt-2 space-y-1 list-decimal list-inside">
+              <li>Toca el boton Compartir en Safari</li>
+              <li>Selecciona &quot;Agregar a pantalla de inicio&quot;</li>
+              <li>Abre la app desde el icono en tu pantalla</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // No mostrar si no hay soporte (otros navegadores)
   if (!isSupported) return null
 
   // Permiso denegado permanentemente
@@ -549,7 +682,22 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 
 **Modificar:** `app/(portal)/portal/perfil/page.tsx`
 
-Agregar el componente `<PushNotifications />` en la seccion de configuracion.
+Agregar import y componente:
+
+```typescript
+// Al inicio del archivo, agregar import
+import PushNotifications from '@/app/components/push-notifications/PushNotifications'
+
+// En el JSX, agregar una seccion de "Configuracion" con el componente
+// Buscar un lugar apropiado en la pagina y agregar:
+
+<section className="mt-8">
+  <h2 className="text-lg font-semibold text-foreground mb-4">
+    Configuracion
+  </h2>
+  <PushNotifications />
+</section>
+```
 
 ---
 
@@ -559,49 +707,89 @@ Agregar el componente `<PushNotifications />` en la seccion de configuracion.
 
 **Modificar:** `public/sw.js`
 
-El codigo actual ya tiene el handler de push. Verificar que este funcionando:
+El codigo actual tiene handlers basicos pero necesita mejoras para iOS y mejor manejo de clicks. **REEMPLAZAR** los handlers actuales de push y notificationclick con:
 
 ```javascript
 // Manejar notificaciones push
 self.addEventListener('push', (event) => {
-  if (event.data) {
+  // Verificar que hay datos
+  if (!event.data) {
+    console.log('Push recibido sin datos')
+    return
+  }
+
+  try {
     const data = event.data.json()
+
     const options = {
-      body: data.body,
+      body: data.body || 'Tienes una notificacion',
       icon: '/icon-192x192.png',
       badge: '/icon-192x192.png',
-      vibrate: [100, 50, 100],
-      tag: data.tag || 'default', // Evitar duplicados
-      renotify: true,
+      vibrate: [200, 100, 200],
+      tag: data.tag || 'otakufiit-notification',
+      renotify: true, // Vibrar aunque tenga el mismo tag
+      requireInteraction: false, // En iOS debe ser false
       data: {
         url: data.url || '/portal/clases',
+        timestamp: Date.now(),
       },
+      // iOS necesita actions vacias o no definidas
+      actions: []
     }
+
     event.waitUntil(
-      self.registration.showNotification(data.title, options)
+      self.registration.showNotification(data.title || 'Otakufiit', options)
     )
+  } catch (error) {
+    console.error('Error procesando push:', error)
   }
 })
 
 // Manejar click en notificaciones
 self.addEventListener('notificationclick', (event) => {
+  console.log('Notification click:', event.notification.tag)
+
+  // Cerrar la notificacion
   event.notification.close()
+
+  const urlToOpen = event.notification.data?.url || '/portal/clases'
+
   event.waitUntil(
-    clients.matchAll({ type: 'window' }).then((clientList) => {
-      // Si ya hay una ventana abierta, enfocarla
-      for (const client of clientList) {
-        if (client.url.includes('/portal') && 'focus' in client) {
-          return client.focus()
+    // Buscar si ya hay una ventana/tab abierta
+    clients.matchAll({
+      type: 'window',
+      includeUncontrolled: true
+    }).then((windowClients) => {
+      // Buscar ventana existente con la app
+      for (const client of windowClients) {
+        // Si hay una ventana del portal, enfocarla y navegar
+        if (client.url.includes('/portal')) {
+          return client.focus().then((focusedClient) => {
+            // Navegar a la URL si es diferente
+            if (focusedClient && 'navigate' in focusedClient) {
+              return focusedClient.navigate(urlToOpen)
+            }
+            return focusedClient
+          })
         }
       }
-      // Si no, abrir nueva ventana
-      if (clients.openWindow) {
-        return clients.openWindow(event.notification.data.url || '/portal/clases')
-      }
+
+      // Si no hay ventana abierta, abrir una nueva
+      return clients.openWindow(urlToOpen)
     })
   )
 })
+
+// Manejar cierre de notificacion (sin click)
+self.addEventListener('notificationclose', (event) => {
+  console.log('Notification cerrada:', event.notification.tag)
+})
 ```
+
+**IMPORTANTE para iOS:**
+- `requireInteraction` debe ser `false` (iOS no lo soporta)
+- `actions` debe estar vacio o no definido (iOS no soporta botones de accion)
+- El usuario debe tener la PWA instalada para recibir push
 
 ---
 
@@ -803,43 +991,111 @@ export async function GET(request: NextRequest) {
 
 ---
 
+## Consideraciones Especificas por Plataforma
+
+### Android (Chrome)
+
+| Aspecto | Comportamiento |
+|---------|---------------|
+| Soporte | Chrome 50+ |
+| PWA requerida | No, funciona en navegador |
+| Permiso | Se puede pedir en cualquier momento |
+| Background | Funciona con app cerrada |
+| Actions | Soporta botones de accion |
+
+### iOS (Safari)
+
+| Aspecto | Comportamiento |
+|---------|---------------|
+| Soporte | iOS 16.4+ (Safari) |
+| PWA requerida | **SI, obligatorio** |
+| Permiso | Solo se puede pedir dentro de PWA |
+| Background | Funciona con app cerrada |
+| Actions | **NO soporta** botones de accion |
+| requireInteraction | **Debe ser false** |
+
+### Flujo especifico iOS
+
+```
+1. Usuario abre app en Safari
+2. Agregar a pantalla de inicio (obligatorio)
+3. Abrir app desde icono (ahora es PWA)
+4. Ir a Perfil > Activar notificaciones
+5. iOS muestra dialogo de permiso
+6. Usuario acepta
+7. Se registra suscripcion
+8. Push funcionan aunque app este cerrada
+```
+
+### Debugging iOS
+
+Para debuggear push en iOS:
+1. Conectar iPhone a Mac
+2. Abrir Safari en Mac
+3. Menu Desarrollo > [tu iPhone] > [nombre de la PWA]
+4. Ver consola del Service Worker
+
+---
+
 ## Checklist de Implementacion
 
 ### Configuracion
-- [ ] Generar VAPID keys
-- [ ] Agregar env vars a .env.local
-- [ ] Agregar env vars a Vercel
-- [ ] Instalar `web-push`
+- [ ] Generar VAPID keys: `npx web-push generate-vapid-keys`
+- [ ] Agregar env vars a `.env.local`
+- [ ] Agregar env vars a Vercel (Settings > Environment Variables)
+- [ ] Instalar dependencia: `npm install web-push`
+- [ ] Agregar tipos: `npm install -D @types/web-push` (si es necesario)
 
-### Base de Datos
+### Base de Datos (Supabase SQL Editor)
 - [ ] Crear tabla `push_subscriptions`
+- [ ] Crear indices
+- [ ] Aplicar RLS policies (4 policies)
 - [ ] Agregar columna `reminder_4h_sent` a bookings
-- [ ] Aplicar RLS policies
+- [ ] Crear indice parcial para el cron
 
-### Backend
-- [ ] Crear `/api/push/subscribe`
-- [ ] Crear `/api/push/unsubscribe`
-- [ ] Crear `/api/push/status`
-- [ ] Crear `lib/notifications/push.ts`
-- [ ] Modificar cron de reminders
+### Backend - Crear archivos
+- [ ] `app/api/push/subscribe/route.ts`
+- [ ] `app/api/push/unsubscribe/route.ts`
+- [ ] `app/api/push/status/route.ts`
+- [ ] `app/api/push/test/route.ts` (opcional, para desarrollo)
+- [ ] `app/lib/notifications/push.ts`
 
-### Frontend
-- [ ] Crear componente `PushNotifications`
-- [ ] Agregar a pagina de perfil
-- [ ] Actualizar service worker si es necesario
+### Backend - Modificar existentes
+- [ ] `app/api/cron/send-reminders/route.ts` - agregar logica 4h
 
-### Testing
-- [ ] Test en Android Chrome
-- [ ] Test en iOS Safari (PWA)
-- [ ] Test de suscripcion/desuscripcion
-- [ ] Test de envio de push
-- [ ] Test de click en notificacion
+### Frontend - Crear archivos
+- [ ] `app/components/push-notifications/PushNotifications.tsx`
+
+### Frontend - Modificar existentes
+- [ ] `app/(portal)/portal/perfil/page.tsx` - agregar componente
+- [ ] `public/sw.js` - actualizar handlers de push
+
+### Testing Android
+- [ ] Abrir en Chrome Android
+- [ ] Activar notificaciones desde Perfil
+- [ ] Verificar registro en Supabase
+- [ ] Ejecutar test: `POST /api/push/test`
+- [ ] Verificar que llega notificacion
+- [ ] Tocar notificacion y verificar navegacion
+- [ ] Cerrar app y verificar push llega igual
+
+### Testing iOS
+- [ ] Abrir en Safari iOS 16.4+
+- [ ] Agregar a pantalla de inicio
+- [ ] Abrir PWA desde icono
+- [ ] Activar notificaciones desde Perfil
+- [ ] Verificar registro en Supabase
+- [ ] Ejecutar test: `POST /api/push/test`
+- [ ] Verificar que llega notificacion
+- [ ] Tocar notificacion y verificar navegacion
+- [ ] Cerrar app y verificar push llega igual
 
 ### Deploy
-- [ ] Commit y push
-- [ ] Verificar deploy en Vercel
+- [ ] Commit y push todos los archivos
+- [ ] Verificar build exitoso en Vercel
 - [ ] Verificar env vars en produccion
-- [ ] Test end-to-end en produccion
+- [ ] Test completo en produccion (Android)
+- [ ] Test completo en produccion (iOS)
 
 ---
 
@@ -847,13 +1103,15 @@ export async function GET(request: NextRequest) {
 
 1. **iOS requiere PWA instalada** - Las push notifications solo funcionan en iOS si la app esta agregada a la pantalla de inicio
 
-2. **VAPID keys son unicas por proyecto** - No reutilizar entre ambientes
+2. **iOS requiere version 16.4+** - Versiones anteriores no soportan Web Push
 
-3. **Suscripciones expiran** - El cron limpia automaticamente las suscripciones invalidas
+3. **VAPID keys son unicas por proyecto** - No reutilizar entre ambientes
 
-4. **Multiples dispositivos** - Un alumno puede tener notificaciones en varios dispositivos
+4. **Suscripciones expiran** - El cron limpia automaticamente las suscripciones invalidas
 
-5. **Cron frequency** - El cron debe ejecutarse al menos cada minuto para no perder la ventana de 4h
+5. **Multiples dispositivos** - Un alumno puede tener notificaciones en varios dispositivos
+
+6. **Cron frequency** - El cron debe ejecutarse al menos cada minuto para no perder la ventana de 4h
 
 ---
 
