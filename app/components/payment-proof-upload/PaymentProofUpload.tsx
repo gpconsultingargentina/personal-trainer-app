@@ -2,15 +2,13 @@
 
 import { useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
-import CouponInput from '@/app/components/coupon-input/CouponInput'
-import PriceDisplay from '@/app/components/price-display/PriceDisplay'
 
 interface PaymentProofUploadProps {
   planId: string
   planPrice: number
   planName: string
   cbuIban: string
-  onSubmit: (fileUrl: string, finalPrice: number, couponId?: string) => Promise<void>
+  onSubmit: (fileUrl: string, finalPrice: number) => Promise<void>
 }
 
 export default function PaymentProofUpload({
@@ -23,14 +21,11 @@ export default function PaymentProofUpload({
   const [file, setFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [finalPrice, setFinalPrice] = useState(planPrice)
-  const [discountAmount, setDiscountAmount] = useState<number>()
-  const [couponCode, setCouponCode] = useState<string>()
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
       const file = acceptedFiles[0]
-      
+
       // Validar tipo
       const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf']
       if (!allowedTypes.includes(file.type)) {
@@ -86,8 +81,8 @@ export default function PaymentProofUpload({
       }
 
       const { url } = await response.json()
-      
-      await onSubmit(url, finalPrice, couponCode)
+
+      await onSubmit(url, planPrice)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al subir el archivo')
       setUploading(false)
@@ -103,26 +98,12 @@ export default function PaymentProofUpload({
         </p>
       </div>
 
-      <CouponInput
-        planPrice={planPrice}
-        planId={planId}
-        onCouponValidated={(valid, price, discount) => {
-          if (valid && price !== undefined) {
-            setFinalPrice(price)
-            setDiscountAmount(discount)
-          } else {
-            setFinalPrice(planPrice)
-            setDiscountAmount(undefined)
-          }
-        }}
-      />
-
-      <PriceDisplay
-        originalPrice={planPrice}
-        finalPrice={finalPrice}
-        discountAmount={discountAmount}
-        couponCode={couponCode}
-      />
+      <div className="bg-gray-50 rounded-lg p-4">
+        <p className="text-sm text-gray-600">Total a pagar:</p>
+        <p className="text-2xl font-bold text-gray-900">
+          ${planPrice.toFixed(2)}
+        </p>
+      </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -175,4 +156,3 @@ export default function PaymentProofUpload({
     </form>
   )
 }
-

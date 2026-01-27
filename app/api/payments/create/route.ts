@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     const supabase = await createServiceClient()
     const body = await request.json()
 
-    const { student_id, plan_id, coupon_id, original_price, final_price, discount_applied, file_url } = body
+    const { student_id, plan_id, original_price, final_price, discount_applied, file_url } = body
 
     if (!student_id || !plan_id || !file_url) {
       return NextResponse.json(
@@ -40,14 +40,9 @@ export async function POST(request: NextRequest) {
       status: 'pending',
     }
 
-    if (coupon_id && uuidRegex.test(coupon_id)) {
-      insertData.coupon_id = coupon_id
-    }
-
     console.log('API: Intentando insertar payment proof con service client:', {
       student_id,
       plan_id,
-      has_coupon: !!coupon_id,
     })
 
     const { data: newPayment, error } = await supabase

@@ -9,7 +9,6 @@ export async function POST(request: NextRequest) {
     const file = formData.get('file') as File
     const studentId = formData.get('student_id') as string
     const planId = formData.get('plan_id') as string || null
-    const couponId = (formData.get('coupon_id') as string) || null
     const originalPrice = parseFloat(formData.get('original_price') as string)
     const finalPrice = parseFloat(formData.get('final_price') as string)
     const discountApplied = parseFloat(formData.get('discount_applied') as string) || 0
@@ -116,10 +115,6 @@ export async function POST(request: NextRequest) {
     // Campos opcionales
     if (planId) {
       insertData.plan_id = planId
-    }
-
-    if (couponId && uuidRegex.test(couponId)) {
-      insertData.coupon_id = couponId
     }
 
     // Campos de creditos

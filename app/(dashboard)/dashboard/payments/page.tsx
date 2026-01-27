@@ -1,17 +1,14 @@
 import Link from 'next/link'
 import { getPaymentProofs, updatePaymentProofStatus } from '@/app/actions/payments'
 import { getPlans } from '@/app/actions/plans'
-import { getCoupons } from '@/app/actions/coupons'
 import { getStudents } from '@/app/actions/students'
 
 export default async function PaymentsPage() {
   const payments = await getPaymentProofs('pending')
   const plans = await getPlans()
-  const coupons = await getCoupons()
   const students = await getStudents()
 
   const plansMap = new Map(plans.map(p => [p.id, p]))
-  const couponsMap = new Map(coupons.map(c => [c.id, c]))
   const studentsMap = new Map(students.map(s => [s.id, s]))
 
   async function handleApprove(id: string) {
@@ -38,7 +35,6 @@ export default async function PaymentsPage() {
           ) : (
             payments.map((payment) => {
               const plan = payment.plan_id ? plansMap.get(payment.plan_id) : null
-              const coupon = payment.coupon_id ? couponsMap.get(payment.coupon_id) : null
               const student = studentsMap.get(payment.student_id)
 
               return (
@@ -58,18 +54,14 @@ export default async function PaymentsPage() {
                           Plan: {plan?.name || payment.plan_name || 'Plan eliminado'}
                         </p>
                         <div className="mt-2 flex items-baseline space-x-4">
-                          <span className="text-sm text-gray-500 line-through">
-                            ${payment.original_price.toFixed(2)}
-                          </span>
+                          {payment.discount_applied > 0 && (
+                            <span className="text-sm text-gray-500 line-through">
+                              ${payment.original_price.toFixed(2)}
+                            </span>
+                          )}
                           <span className="text-xl font-bold text-green-600">
                             ${payment.final_price.toFixed(2)}
                           </span>
-                          {payment.discount_applied > 0 && (
-                            <span className="text-sm text-green-600">
-                              Ahorro: ${payment.discount_applied.toFixed(2)}
-                              {coupon && ` (${coupon.code})`}
-                            </span>
-                          )}
                         </div>
                         <div className="mt-4">
                           {(() => {
@@ -120,4 +112,3 @@ export default async function PaymentsPage() {
     </div>
   )
 }
-

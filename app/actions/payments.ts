@@ -8,7 +8,6 @@ export type PaymentProof = {
   student_id: string
   plan_id: string | null
   plan_name: string | null
-  coupon_id: string | null
   original_price: number
   final_price: number
   discount_applied: number
@@ -50,12 +49,11 @@ export async function createPaymentProof(data: {
   student_id: string
   plan_id?: string | null
   plan_name?: string | null
-  coupon_id?: string | null
   original_price: number
   final_price: number
   discount_applied: number
   file_url: string
-  // Nuevos campos para sistema de créditos
+  // Campos para sistema de créditos
   classes_purchased?: number | null
   price_per_class?: number | null
   frequency_code?: string | null
@@ -69,7 +67,6 @@ export async function createPaymentProof(data: {
       student_id: data.student_id,
       plan_id: data.plan_id || null,
       plan_name: data.plan_name || null,
-      coupon_id: data.coupon_id || null,
       original_price: data.original_price,
       final_price: data.final_price,
       discount_applied: data.discount_applied,

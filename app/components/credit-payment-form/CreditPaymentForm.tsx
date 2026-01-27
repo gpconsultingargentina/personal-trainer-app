@@ -3,8 +3,6 @@
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDropzone } from 'react-dropzone'
-import CouponInput from '@/app/components/coupon-input/CouponInput'
-import PriceDisplay from '@/app/components/price-display/PriceDisplay'
 
 // Tipo minimo requerido de frecuencia (compatible con StudentWithFrequency.frequency)
 interface FrequencyInfo {
@@ -34,13 +32,9 @@ export default function CreditPaymentForm({
 
   const [classesCount, setClassesCount] = useState<number>(12)
   const [file, setFile] = useState<File | null>(null)
-  const [discountAmount, setDiscountAmount] = useState<number>()
-  const [couponCode, setCouponCode] = useState<string>()
-  const [couponId, setCouponId] = useState<string | null>(null)
 
   const pricePerClass = frequency?.price_per_class || 0
-  const originalPrice = classesCount * pricePerClass
-  const finalPrice = discountAmount !== undefined ? originalPrice - discountAmount : originalPrice
+  const totalPrice = classesCount * pricePerClass
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
@@ -85,21 +79,16 @@ export default function CreditPaymentForm({
     }
 
     try {
-      const finalDiscount = discountAmount || 0
-
       const formDataToSend = new FormData()
       formDataToSend.append('file', file)
       formDataToSend.append('student_id', studentId)
-      formDataToSend.append('original_price', originalPrice.toString())
-      formDataToSend.append('final_price', finalPrice.toString())
-      formDataToSend.append('discount_applied', finalDiscount.toString())
-      // Nuevos campos para creditos
+      formDataToSend.append('original_price', totalPrice.toString())
+      formDataToSend.append('final_price', totalPrice.toString())
+      formDataToSend.append('discount_applied', '0')
+      // Campos para creditos
       formDataToSend.append('classes_purchased', classesCount.toString())
       formDataToSend.append('price_per_class', pricePerClass.toString())
       formDataToSend.append('frequency_code', frequency.frequency_code)
-      if (couponId) {
-        formDataToSend.append('coupon_id', couponId)
-      }
 
       const response = await fetch('/api/payments/upload-and-create', {
         method: 'POST',
@@ -166,13 +155,7 @@ export default function CreditPaymentForm({
           min={1}
           max={100}
           value={classesCount}
-          onChange={(e) => {
-            setClassesCount(parseInt(e.target.value) || 1)
-            // Reset cupón al cambiar cantidad
-            setDiscountAmount(undefined)
-            setCouponCode(undefined)
-            setCouponId(null)
-          }}
+          onChange={(e) => setClassesCount(parseInt(e.target.value) || 1)}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
         />
         <p className="mt-1 text-sm text-gray-500">
@@ -185,12 +168,7 @@ export default function CreditPaymentForm({
           <button
             key={count}
             type="button"
-            onClick={() => {
-              setClassesCount(count)
-              setDiscountAmount(undefined)
-              setCouponCode(undefined)
-              setCouponId(null)
-            }}
+            onClick={() => setClassesCount(count)}
             className={`px-3 py-2 text-sm rounded-md border ${
               classesCount === count
                 ? 'bg-indigo-100 border-indigo-500 text-indigo-700'
@@ -202,27 +180,12 @@ export default function CreditPaymentForm({
         ))}
       </div>
 
-      <CouponInput
-        planPrice={originalPrice}
-        onCouponValidated={(valid, price, discount, code, coupon) => {
-          if (valid && price !== undefined && discount !== undefined) {
-            setDiscountAmount(discount)
-            setCouponCode(code)
-            setCouponId(coupon?.id || null)
-          } else {
-            setDiscountAmount(undefined)
-            setCouponCode(undefined)
-            setCouponId(null)
-          }
-        }}
-      />
-
-      <PriceDisplay
-        originalPrice={originalPrice}
-        finalPrice={finalPrice}
-        discountAmount={discountAmount}
-        couponCode={couponCode}
-      />
+      <div className="bg-gray-50 rounded-lg p-4">
+        <p className="text-sm text-gray-600">Total a pagar:</p>
+        <p className="text-2xl font-bold text-gray-900">
+          ${totalPrice.toLocaleString('es-AR')}
+        </p>
+      </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -272,7 +235,7 @@ export default function CreditPaymentForm({
           disabled={loading || classesCount < 1 || !file}
           className="px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? 'Subiendo...' : `Subir Comprobante ($${finalPrice.toLocaleString('es-AR')})`}
+          {loading ? 'Subiendo...' : `Subir Comprobante ($${totalPrice.toLocaleString('es-AR')})`}
         </button>
       </div>
     </form>

@@ -37,7 +37,6 @@ export default async function StudentHistoryPage({
     .from('payment_proofs')
     .select(`
       *,
-      coupons (code, discount_type, discount_value),
       class_plans (name)
     `)
     .eq('student_id', id)
@@ -132,11 +131,6 @@ export default async function StudentHistoryPage({
                       {payment.classes_purchased && payment.price_per_class && (
                         <p className="text-xs text-gray-400">
                           ${payment.price_per_class.toLocaleString('es-AR')}/clase
-                        </p>
-                      )}
-                      {payment.coupons && (
-                        <p className="text-sm text-green-600">
-                          Cupon: {payment.coupons.code}
                         </p>
                       )}
                     </div>

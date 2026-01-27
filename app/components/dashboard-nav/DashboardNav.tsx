@@ -9,7 +9,6 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/dashboard/classes', label: 'Clases' },
   { href: '/dashboard/plans', label: 'Planes' },
-  { href: '/dashboard/coupons', label: 'Cupones' },
   { href: '/dashboard/payments', label: 'Pagos' },
   { href: '/dashboard/students', label: 'Alumnos' },
   { href: '/dashboard/reports', label: 'Reportes' },
