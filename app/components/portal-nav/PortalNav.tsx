@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { logout } from '@/app/actions/auth'
+import InstallPWA from '@/app/components/install-pwa/InstallPWA'
 
 const navItems = [
   { href: '/portal', label: 'Inicio' },
@@ -120,6 +121,7 @@ export default function PortalNav({ studentName }: PortalNavProps) {
                 {item.label}
               </Link>
             ))}
+            <InstallPWA />
             <form action={logout} className="border-t border-border pt-2">
               <button
                 type="submit"
