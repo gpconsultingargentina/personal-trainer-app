@@ -1,5 +1,9 @@
-ultimo_id: 5
+ultimo_id: 6
 activos:
+  - id: "006"
+    archivo: "006-notificaciones-push.md"
+    titulo: "Notificaciones Push para Alumnos"
+    estado: "pendiente"
   - id: "005"
     archivo: "005-branding-otakufiit.md"
     titulo: "Implementar Branding Otakufiit - Dark Mode"
