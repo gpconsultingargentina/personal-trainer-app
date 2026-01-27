@@ -1,7 +1,7 @@
 import { Resend } from 'resend'
 import { formatDateTime24h } from '@/app/lib/utils'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
 interface SendReminderEmailParams {
   to: string
@@ -18,7 +18,7 @@ export async function sendReminderEmail({
   scheduledAt,
   reminderType,
 }: SendReminderEmailParams): Promise<{ success: boolean; error?: string }> {
-  if (!process.env.RESEND_API_KEY || !process.env.EMAIL_FROM) {
+  if (!resend || !process.env.EMAIL_FROM) {
     console.error('RESEND_API_KEY o EMAIL_FROM no están configurados')
     return { success: false, error: 'Configuración de email no encontrada' }
   }

@@ -10,13 +10,12 @@ interface DeletePlanButtonProps {
 export default function DeletePlanButton({ planId, planName }: DeletePlanButtonProps) {
   const handleDelete = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    
+
     if (!confirm(`¿Estás seguro de que quieres eliminar el plan "${planName}"?`)) {
       return
     }
 
-    const formData = new FormData(e.currentTarget)
-    await deletePlan(formData)
+    await deletePlan(planId)
   }
 
   return (

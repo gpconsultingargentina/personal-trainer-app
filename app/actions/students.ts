@@ -160,3 +160,32 @@ export async function createStudent(formData: FormData) {
   redirect('/dashboard/students')
 }
 
+export async function deleteStudent(id: string) {
+  const supabase = await createClient()
+
+  const { error } = await supabase.from('students').delete().eq('id', id)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  revalidatePath('/dashboard/students')
+}
+
+export async function deleteStudents(ids: string[]) {
+  const supabase = await createClient()
+
+  if (ids.length === 0) {
+    throw new Error('No se seleccionaron estudiantes para eliminar')
+  }
+
+  const { error } = await supabase.from('students').delete().in('id', ids)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  revalidatePath('/dashboard/students')
+  return { success: true, deletedCount: ids.length }
+}
+

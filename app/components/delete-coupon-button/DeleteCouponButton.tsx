@@ -10,13 +10,12 @@ interface DeleteCouponButtonProps {
 export default function DeleteCouponButton({ couponId, couponCode }: DeleteCouponButtonProps) {
   const handleDelete = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    
+
     if (!confirm(`¿Estás seguro de que quieres eliminar el cupón "${couponCode}"?`)) {
       return
     }
 
-    const formData = new FormData(e.currentTarget)
-    await deleteCoupon(formData)
+    await deleteCoupon(couponId)
   }
 
   return (
