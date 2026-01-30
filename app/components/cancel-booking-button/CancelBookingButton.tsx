@@ -87,8 +87,17 @@ export default function CancelBookingButton({ bookingId, classDate, studentName,
     // Construir URL de WhatsApp
     const whatsappUrl = `https://wa.me/${trainerPhone}?text=${encodeURIComponent(mensaje)}`
     
-    // Abrir en nueva ventana
-    window.open(whatsappUrl, '_blank')
+    // Detectar si está en PWA (standalone mode)
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                        (window.navigator as any).standalone === true
+    
+    if (isStandalone) {
+      // En PWA: usar location.href para abrir WhatsApp
+      window.location.href = whatsappUrl
+    } else {
+      // En navegador: abrir en nueva pestaña
+      window.open(whatsappUrl, '_blank')
+    }
   }
 
   return (
