@@ -265,6 +265,7 @@ export async function updateStudent(
   id: string,
   data: {
     name?: string
+    email?: string
     phone?: string | null
     frequency_id?: string | null
     usual_schedule?: UsualScheduleItem[]
@@ -272,10 +273,25 @@ export async function updateStudent(
 ) {
   const supabase = await createClient()
 
+  // Si se está cambiando el email, verificar que no exista otro estudiante con ese email
+  if (data.email !== undefined) {
+    const { data: existing } = await supabase
+      .from('students')
+      .select('id')
+      .eq('email', data.email)
+      .neq('id', id)
+      .single()
+
+    if (existing) {
+      throw new Error('Ya existe otro alumno con ese email')
+    }
+  }
+
   const { error } = await supabase
     .from('students')
     .update({
-      ...(data.name && { name: data.name }),
+      ...(data.name !== undefined && { name: data.name }),
+      ...(data.email !== undefined && { email: data.email }),
       ...(data.phone !== undefined && { phone: data.phone }),
       ...(data.frequency_id !== undefined && { frequency_id: data.frequency_id }),
       ...(data.usual_schedule !== undefined && { usual_schedule: data.usual_schedule }),
@@ -287,6 +303,7 @@ export async function updateStudent(
   }
 
   revalidatePath('/dashboard/students')
+  revalidatePath(`/dashboard/students/${id}`)
   return { success: true }
 }
 

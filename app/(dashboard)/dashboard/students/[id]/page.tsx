@@ -1,5 +1,6 @@
 import { getStudentWithFrequency } from '@/app/actions/students'
 import { getStudentCreditSummary, getCreditTransactions } from '@/app/actions/credits'
+import { getActiveFrequencies } from '@/app/actions/frequencies'
 import { createClient } from '@/app/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -7,6 +8,7 @@ import AddClassToStudent from '@/app/components/add-class-to-student/AddClassToS
 import StudentBookingsList from '@/app/components/student-bookings-list/StudentBookingsList'
 import StudentCreditSummaryWrapper from '@/app/components/student-credit-summary/StudentCreditSummaryWrapper'
 import InviteStudentButton from '@/app/components/invite-student/InviteStudentButton'
+import EditStudentModal from '@/app/components/edit-student-modal/EditStudentModal'
 
 export default async function StudentHistoryPage({
   params,
@@ -21,6 +23,7 @@ export default async function StudentHistoryPage({
   }
 
   const supabase = await createClient()
+  const frequencies = await getActiveFrequencies()
 
   // Obtener reservas del estudiante
   const { data: bookings } = await supabase
@@ -59,6 +62,7 @@ export default async function StudentHistoryPage({
           Historial de {student.name}
         </h1>
         <div className="flex space-x-3">
+          <EditStudentModal student={student} frequencies={frequencies} />
           <AddClassToStudent studentId={student.id} />
         </div>
       </div>
