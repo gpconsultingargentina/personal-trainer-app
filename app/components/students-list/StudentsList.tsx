@@ -130,7 +130,18 @@ export default function StudentsList({ students }: StudentsListProps) {
                   <Link href={`/dashboard/students/${student.id}`} className="flex-1 ml-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-lg font-medium text-foreground">{student.name}</h3>
+                        <div className="flex items-center space-x-2">
+                          <h3 className="text-lg font-medium text-foreground">{student.name}</h3>
+                          {student.auth_user_id ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-success/10 text-success">
+                              Registrado
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary">
+                              Pendiente
+                            </span>
+                          )}
+                        </div>
                         <p className="mt-1 text-sm text-muted">{student.email}</p>
                         {student.phone && (
                           <p className="mt-1 text-sm text-muted">{student.phone}</p>

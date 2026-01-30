@@ -3,6 +3,9 @@ const nextConfig = {
   images: {
     domains: [],
   },
+  turbopack: {
+    root: __dirname,
+  },
   async headers() {
     return [
       {
