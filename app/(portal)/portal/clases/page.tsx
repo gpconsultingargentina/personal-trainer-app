@@ -120,7 +120,11 @@ export default async function ClasesPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   {booking.status === 'confirmed' && (
-                    <CancelBookingButton bookingId={booking.id} />
+                    <CancelBookingButton 
+                      bookingId={booking.id}
+                      classDate={booking.class.scheduled_at}
+                      studentName={student.name}
+                    />
                   )}
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[booking.status]}`}>
                     {statusLabels[booking.status]}

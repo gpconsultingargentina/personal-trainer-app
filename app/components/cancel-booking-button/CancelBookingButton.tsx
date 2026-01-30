@@ -20,10 +20,12 @@ type CancellationCheck = {
 
 type Props = {
   bookingId: string
+  classDate: string
+  studentName: string
   onCancelled?: () => void
 }
 
-export default function CancelBookingButton({ bookingId, onCancelled }: Props) {
+export default function CancelBookingButton({ bookingId, classDate, studentName, onCancelled }: Props) {
   const [isPending, startTransition] = useTransition()
   const [showModal, setShowModal] = useState(false)
   const [checkResult, setCheckResult] = useState<CancellationCheck | null>(null)
@@ -53,6 +55,9 @@ export default function CancelBookingButton({ bookingId, onCancelled }: Props) {
         if (result.success) {
           setShowModal(false)
           onCancelled?.()
+          
+          // Abrir WhatsApp con mensaje pre-rellenado
+          openWhatsAppToTrainer()
         } else {
           setError(result.message)
         }
@@ -60,6 +65,30 @@ export default function CancelBookingButton({ bookingId, onCancelled }: Props) {
         setError(err instanceof Error ? err.message : 'Error al cancelar')
       }
     })
+  }
+
+  const openWhatsAppToTrainer = () => {
+    // Formatear fecha y hora
+    const date = new Date(classDate)
+    const formattedDate = date.toLocaleDateString('es-AR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+    
+    // Construir mensaje
+    const mensaje = `Hola profe, soy ${studentName}. Quiero cancelar mi clase del ${formattedDate}.`
+    
+    // Número de WhatsApp del entrenador (desde variable de entorno)
+    const trainerPhone = process.env.NEXT_PUBLIC_TRAINER_WHATSAPP || '5491112345678'
+    
+    // Construir URL de WhatsApp
+    const whatsappUrl = `https://wa.me/${trainerPhone}?text=${encodeURIComponent(mensaje)}`
+    
+    // Abrir en nueva ventana
+    window.open(whatsappUrl, '_blank')
   }
 
   return (

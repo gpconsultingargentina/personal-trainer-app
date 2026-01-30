@@ -944,7 +944,7 @@ export async function checkCancellationConsequences(bookingId: string): Promise<
       willDeductCredit: false,
       hoursUntilClass,
       toleranceInfo: null,
-      message: 'Podés cancelar sin penalidad (más de 24h de anticipación)',
+      message: 'Podés cancelar sin penalidad (más de 24h de anticipación). La cancelación se hará efectiva cuando le avises por WhatsApp a tu entrenador. Él intentará reprogramarte primero. Recuerda no abusar de este recurso.',
     }
   }
 
