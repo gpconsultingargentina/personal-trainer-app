@@ -293,11 +293,19 @@ export async function createRecurringClassesForStudent(
       classDate.setHours(dayTime.hour, dayTime.minute, 0, 0)
 
       try {
+        // Construir el datetime string sin conversión UTC
+        // Esto preserva la hora exacta que el entrenador especifica
+        const year = classDate.getFullYear()
+        const month = String(classDate.getMonth() + 1).padStart(2, '0')
+        const day = String(classDate.getDate()).padStart(2, '0')
+        const hrs = String(classDate.getHours()).padStart(2, '0')
+        const mins = String(classDate.getMinutes()).padStart(2, '0')
+        
         // Crear la clase
         const { data: classData, error: classError } = await supabase
           .from('classes')
           .insert({
-            scheduled_at: classDate.toISOString(),
+            scheduled_at: `${year}-${month}-${day}T${hrs}:${mins}:00`,
             duration_minutes: durationMinutes,
             max_capacity: maxCapacity,
             current_bookings: 1,

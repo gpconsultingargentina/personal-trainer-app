@@ -327,8 +327,16 @@ export async function createRecurringBookings(data: {
 
       // Solo agregar si la fecha está dentro del rango y no es en el pasado
       if (classDate <= endDate && classDate >= start) {
+        // Construir el datetime string sin conversión UTC
+        // Esto preserva la hora exacta que el entrenador especifica
+        const year = classDate.getFullYear()
+        const month = String(classDate.getMonth() + 1).padStart(2, '0')
+        const day = String(classDate.getDate()).padStart(2, '0')
+        const hrs = String(classDate.getHours()).padStart(2, '0')
+        const mins = String(classDate.getMinutes()).padStart(2, '0')
+        
         classesToCreate.push({
-          scheduled_at: classDate.toISOString(),
+          scheduled_at: `${year}-${month}-${day}T${hrs}:${mins}:00`,
           duration_minutes: durationMinutes,
           max_capacity: maxCapacity,
           current_bookings: 0,
