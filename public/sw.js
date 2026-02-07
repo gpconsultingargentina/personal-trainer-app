@@ -1,4 +1,4 @@
-const CACHE_NAME = 'otakufiit-v3'
+const CACHE_NAME = 'otakufiit-v4'
 
 // Archivos a cachear para offline
 const STATIC_ASSETS = [

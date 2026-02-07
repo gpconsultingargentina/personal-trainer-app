@@ -28,8 +28,15 @@ export async function createClass(formData: FormData) {
   const maxCapacity = parseInt(formData.get('max_capacity') as string) || 1
   const description = formData.get('description') as string || null
 
+  // Asegurar formato correcto sin conversión UTC
+  // El scheduledAt viene como "YYYY-MM-DDTHH:mm" del formulario
+  // Lo guardamos exactamente así, sin segundos ni zona horaria
+  const formattedScheduledAt = scheduledAt.includes(':') && !scheduledAt.endsWith(':00')
+    ? `${scheduledAt}:00`
+    : scheduledAt
+
   const { error } = await supabase.from('classes').insert({
-    scheduled_at: scheduledAt,
+    scheduled_at: formattedScheduledAt,
     duration_minutes: durationMinutes,
     max_capacity: maxCapacity,
     current_bookings: 0,
@@ -54,10 +61,15 @@ export async function updateClass(id: string, formData: FormData) {
   const status = formData.get('status') as 'scheduled' | 'completed' | 'cancelled'
   const description = formData.get('description') as string || null
 
+  // Asegurar formato correcto sin conversión UTC
+  const formattedScheduledAt = scheduledAt.includes(':') && !scheduledAt.endsWith(':00')
+    ? `${scheduledAt}:00`
+    : scheduledAt
+
   const { error } = await supabase
     .from('classes')
     .update({
-      scheduled_at: scheduledAt,
+      scheduled_at: formattedScheduledAt,
       duration_minutes: durationMinutes,
       max_capacity: maxCapacity,
       status,
