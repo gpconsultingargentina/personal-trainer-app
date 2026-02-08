@@ -462,14 +462,20 @@ git commit -m "fix: corregir desfasaje horario UTC y formato 12h/24h en clases"
 ### Inmediatos
 1. [x] Crear commit con fix
 2. [x] Documentar en cerrado-012
-3. [ ] Push a repositorio
-4. [ ] Deploy a Vercel
-5. [ ] Eliminar clases existentes con bug
-6. [ ] Crear clases nuevas para testing
-7. [ ] Verificar en ambos paneles
+3. [x] Push a repositorio
+4. [x] Deploy a Vercel
+5. [x] Ejecutar migración SQL en Supabase
+6. [x] Verificar en ambos paneles
+7. [x] Hard refresh en ambos dispositivos
+
+### Completado
+- [x] Script de migración ejecutado exitosamente
+- [x] Columna `scheduled_at` cambiada de `TIMESTAMPTZ` a `TIMESTAMP`
+- [x] Todas las fechas convertidas correctamente
+- [x] Formato 24h aplicado en todas las pantallas
+- [x] Ambos paneles muestran la misma hora
 
 ### Futuro (Si es necesario)
-- [ ] Crear script de migración para clases existentes
 - [ ] Agregar tests unitarios para formateo de fechas
 - [ ] Crear helper functions para manejo de fechas
 - [ ] Considerar librería timezone si se expande a otros países
@@ -504,6 +510,38 @@ git commit -m "fix: corregir desfasaje horario UTC y formato 12h/24h en clases"
 
 ---
 
-**Estado:** ✅ Completado
+## Resultado Final
+
+### ✅ Testing Completado en Producción
+
+**Fecha:** 2026-02-07
+
+**Verificaciones realizadas:**
+- [x] Deploy de Vercel completado exitosamente
+- [x] Migración SQL ejecutada en Supabase
+- [x] Columna `scheduled_at` cambiada a `TIMESTAMP WITHOUT TIME ZONE`
+- [x] Todas las fechas existentes convertidas correctamente
+- [x] Entrenador ve formato 24h: `18:00` ✅
+- [x] Alumna ve formato 24h: `18:00` ✅
+- [x] Ambos ven exactamente la misma hora ✅
+- [x] Sin desfasaje de 3 horas ✅
+
+**Commits relacionados:**
+- `7899cac` - fix: corregir desfasaje horario UTC y formato 12h/24h en clases
+- `cdd2c33` - fix: agregar formato correcto en createClass y updateClass + cache v4
+- `45c0d8a` - fix: agregar hour12:false en pantalla principal del portal
+- `[nuevo]` - feat: migración SQL para cambiar scheduled_at de TIMESTAMPTZ a TIMESTAMP
+
+**Archivos modificados:**
+- `app/actions/bookings.ts` - Fix createRecurringBookings
+- `app/actions/classes.ts` - Fix createClass y updateClass
+- `app/(portal)/portal/clases/page.tsx` - Formato 24h en "Ver todas"
+- `app/(portal)/portal/page.tsx` - Formato 24h en pantalla principal
+- `public/sw.js` - Cache v4
+- `supabase/migrations/20260207_fix_timezone_scheduled_at.sql` - Migración de DB
+
+---
+
+**Estado:** ✅ COMPLETADO Y VERIFICADO
 **Última actualización:** 2026-02-07
-**Próxima acción:** Push y deploy para testing en producción
+**Resultado:** ✅ Ambos usuarios ven la misma hora en formato 24h correctamente
